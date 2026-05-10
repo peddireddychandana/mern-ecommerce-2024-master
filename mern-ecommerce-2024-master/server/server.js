@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs");
 require("dotenv").config();
 
 const authRouter = require("./routes/auth/auth-routes");
@@ -63,10 +64,11 @@ app.use("/api/shop/review", shopReviewRouter);
 app.use("/api/common/feature", commonFeatureRouter);
 
 const clientBuildPath = path.join(__dirname, "..", "client", "dist");
-app.use(express.static(clientBuildPath));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(clientBuildPath, "index.html"));
-});
+if (fs.existsSync(clientBuildPath)) {
+  app.use(express.static(clientBuildPath));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(clientBuildPath, "index.html"));
+  });
+}
 
 app.listen(PORT, () => console.log(`Server is now running on port ${PORT}`));
