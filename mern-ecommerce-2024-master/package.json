@@ -1,7 +1,14 @@
 {
+  "name": "mern-ecommerce",
+  "private": true,
+  "scripts": {
+    "build": "cd client && npm ci && npm run build"
+  },
+  "workspaces": ["server"],
   "dependencies": {
     "cloudinary": "^2.10.0",
     "framer-motion": "^12.38.0",
-    "gsap": "^3.15.0"
+    "gsap": "^3.15.0",
+    "serverless-http": "^3.2.0"
   }
 }
