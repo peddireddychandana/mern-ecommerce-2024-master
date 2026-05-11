@@ -52,19 +52,21 @@ app.options("*", cors());
 app.use(cookieParser());
 app.use(express.json());
 
-app.use("/api/auth", authRouter);
-app.use("/auth", authRouter);
-app.use("/api/admin/products", adminProductsRouter);
-app.use("/api/admin/orders", adminOrderRouter);
+const mount = (path, router) => {
+  app.use(`/api${path}`, router);
+  app.use(path, router);
+};
 
-app.use("/api/shop/products", shopProductsRouter);
-app.use("/api/shop/cart", shopCartRouter);
-app.use("/api/shop/address", shopAddressRouter);
-app.use("/api/shop/order", shopOrderRouter);
-app.use("/api/shop/search", shopSearchRouter);
-app.use("/api/shop/review", shopReviewRouter);
-
-app.use("/api/common/feature", commonFeatureRouter);
+mount("/auth", authRouter);
+mount("/admin/products", adminProductsRouter);
+mount("/admin/orders", adminOrderRouter);
+mount("/shop/products", shopProductsRouter);
+mount("/shop/cart", shopCartRouter);
+mount("/shop/address", shopAddressRouter);
+mount("/shop/order", shopOrderRouter);
+mount("/shop/search", shopSearchRouter);
+mount("/shop/review", shopReviewRouter);
+mount("/common/feature", commonFeatureRouter);
 
 const clientBuildPath = path.join(__dirname, "..", "client", "dist");
 if (fs.existsSync(clientBuildPath)) {
