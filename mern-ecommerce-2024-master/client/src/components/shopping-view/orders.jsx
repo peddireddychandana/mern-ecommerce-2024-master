@@ -96,10 +96,10 @@ function ShoppingOrders() {
                             }}
                           >
                             <Button
-                              size="sm"
                               onClick={() =>
                                 handleFetchOrderDetails(orderItem?._id)
                               }
+                              className="min-h-[36px] text-xs sm:text-sm px-2 sm:px-4"
                             >
                               View Details
                             </Button>
@@ -107,8 +107,8 @@ function ShoppingOrders() {
                           </Dialog>
                           <Button
                             variant="destructive"
-                            size="sm"
                             onClick={() => handleDeleteOrder(orderItem?._id)}
+                            className="min-h-[36px] text-xs sm:text-sm px-2 sm:px-4"
                           >
                             Delete
                           </Button>
@@ -121,10 +121,10 @@ function ShoppingOrders() {
           </Table>
         </div>
         {/* Mobile cards */}
-        <div className="md:hidden grid gap-4">
+        <div className="md:hidden grid gap-3">
           {orderList && orderList.length > 0
             ? orderList.map((orderItem) => (
-                <div key={orderItem?._id} className="rounded-lg border p-4 space-y-3">
+                <div key={orderItem?._id} className="rounded-lg border p-3 sm:p-4 space-y-2 sm:space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground truncate max-w-[50%]">
                       ID: {orderItem?._id}
@@ -158,8 +158,7 @@ function ShoppingOrders() {
                       }}
                     >
                       <Button
-                        size="sm"
-                        className="flex-1"
+                        className="flex-1 min-h-[44px] text-xs sm:text-sm"
                         onClick={() =>
                           handleFetchOrderDetails(orderItem?._id)
                         }
@@ -170,8 +169,7 @@ function ShoppingOrders() {
                     </Dialog>
                     <Button
                       variant="destructive"
-                      size="sm"
-                      className="flex-1"
+                      className="flex-1 min-h-[44px] text-xs sm:text-sm"
                       onClick={() => handleDeleteOrder(orderItem?._id)}
                     >
                       Delete
