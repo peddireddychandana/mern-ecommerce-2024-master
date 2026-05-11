@@ -31,10 +31,10 @@ function ShoppingProductTile({
             </Badge>
           ) : null}
         </div>
-        <CardContent className="p-4">
-          <h2 className="text-lg sm:text-xl font-bold mb-2 line-clamp-2">{product?.title}</h2>
+        <CardContent className="p-3 sm:p-4">
+          <h2 className="text-sm sm:text-lg md:text-xl font-bold mb-2 line-clamp-2">{product?.title}</h2>
           <div className="flex justify-between items-center mb-2">
-            <span className="text-[16px] text-muted-foreground">
+            <span className="text-xs sm:text-sm md:text-[16px] text-muted-foreground">
               {categoryOptionsMap[product?.category]}
             </span>
           </div>
@@ -42,19 +42,19 @@ function ShoppingProductTile({
             <span
               className={`${
                 product?.salePrice > 0 ? "line-through" : ""
-              } text-lg font-semibold text-primary`}
+              } text-sm sm:text-lg font-semibold text-primary`}
             >
               ${product?.price}
             </span>
             {product?.salePrice > 0 ? (
-              <span className="text-lg font-semibold text-primary">
+              <span className="text-sm sm:text-lg font-semibold text-primary">
                 ${product?.salePrice}
               </span>
             ) : null}
           </div>
         </CardContent>
       </div>
-      <CardFooter>
+      <CardFooter className="p-3 sm:p-4 pt-0">
         {product?.totalStock === 0 ? (
           <Button className="w-full opacity-60 cursor-not-allowed">
             Out Of Stock

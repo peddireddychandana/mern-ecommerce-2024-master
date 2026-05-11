@@ -87,9 +87,9 @@ function ShoppingCheckout() {
         phone: currentSelectedAddress?.phone,
         notes: currentSelectedAddress?.notes,
       },
-      orderStatus: paymentMethod === "cod" ? "confirmed" : "pending",
+      orderStatus: "pending",
       paymentMethod,
-      paymentStatus: paymentMethod === "cod" ? "unpaid" : "pending",
+      paymentStatus: "pending",
       totalAmount: totalCartAmount,
       orderDate: new Date(),
       orderUpdateDate: new Date(),
@@ -99,21 +99,12 @@ function ShoppingCheckout() {
       setIsProcessing(false);
       if (data?.payload?.success) {
         setOrderCreated(true);
-
-        if (paymentMethod === "cod") {
-          setPaymentConfirmed(true);
-        } else {
-          sessionStorage.setItem(
-            "currentOrderId",
-            JSON.stringify(data.payload.orderId)
-          );
-        }
-
+        sessionStorage.setItem(
+          "currentOrderId",
+          JSON.stringify(data.payload.orderId)
+        );
         toast({
-          title:
-            paymentMethod === "cod"
-              ? "Order placed successfully!"
-              : "Order created! Please complete the payment.",
+          title: "Order created! Please complete the payment.",
         });
       } else {
         toast({
@@ -159,20 +150,16 @@ function ShoppingCheckout() {
 
   if (paymentConfirmed) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
-          <div className="text-6xl mb-4">&#10003;</div>
-          <h2 className="text-2xl font-bold mb-2">
-            {paymentMethod === "cod"
-              ? "Order Placed Successfully!"
-              : "Payment Submitted for Verification"}
+      <div className="flex flex-col items-center justify-center min-h-[50vh] px-4 py-8">
+        <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 max-w-md w-full text-center">
+          <div className="text-4xl sm:text-6xl mb-4">&#10003;</div>
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">
+            Payment Submitted for Verification
           </h2>
-          <p className="text-gray-600 mb-6">
-            {paymentMethod === "cod"
-              ? "Your order has been placed. You will pay when you receive it."
-              : "Your payment is being verified by the admin. You will receive a confirmation once approved."}
+          <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
+            Your payment is being verified by the admin. You will receive a confirmation once approved.
           </p>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-sm text-gray-500 mb-4 sm:mb-6 break-all">
             Order ID: {orderId}
           </p>
           <Button
@@ -187,99 +174,93 @@ function ShoppingCheckout() {
   }
 
   return (
-    <div className="flex flex-col">
-      <div className="relative h-[150px] sm:h-[300px] w-full overflow-hidden">
+    <div className="flex flex-col min-h-screen">
+      <div className="relative h-[120px] sm:h-[200px] md:h-[300px] w-full overflow-hidden">
         <img src={img} className="h-full w-full object-cover object-center" />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5 p-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 mt-4 sm:mt-5 p-3 sm:p-5 max-w-7xl mx-auto w-full">
         <Address
           selectedId={currentSelectedAddress}
           setCurrentSelectedAddress={setCurrentSelectedAddress}
         />
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 sm:gap-4">
           {cartItems && cartItems.items && cartItems.items.length > 0
             ? cartItems.items.map((item) => (
                 <UserCartItemsContent key={item.productId} cartItem={item} />
               ))
             : null}
 
-          <div className="mt-8 space-y-4">
-            <div className="flex justify-between">
+          <div className="mt-4 sm:mt-8 space-y-3 sm:space-y-4">
+            <div className="flex justify-between text-base sm:text-lg">
               <span className="font-bold">Total</span>
               <span className="font-bold">${totalCartAmount}</span>
             </div>
           </div>
 
           {!orderCreated && (
-            <div className="mt-4 space-y-3">
+            <div className="mt-3 sm:mt-4 space-y-3">
               <div className="space-y-2">
-                <label className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-gray-50">
+                <label className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border rounded-md cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors">
                   <input
                     type="radio"
                     name="paymentMethod"
                     value="upi"
                     checked={paymentMethod === "upi"}
                     onChange={() => setPaymentMethod("upi")}
+                    className="w-4 h-4 sm:w-5 sm:h-5"
                   />
-                  <span className="font-medium">Pay via UPI</span>
-                  <span className="text-sm text-gray-500">
-                    (Google Pay / PhonePe / Paytm / BHIM)
-                  </span>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-2">
+                    <span className="font-medium text-sm sm:text-base">Pay via UPI</span>
+                    <span className="text-xs sm:text-sm text-gray-500">
+                      (Google Pay / PhonePe / Paytm / BHIM)
+                    </span>
+                  </div>
                 </label>
-                <label className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-gray-50">
+                <label className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border rounded-md cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors">
                   <input
                     type="radio"
                     name="paymentMethod"
                     value="phonepe"
                     checked={paymentMethod === "phonepe"}
                     onChange={() => setPaymentMethod("phonepe")}
+                    className="w-4 h-4 sm:w-5 sm:h-5"
                   />
-                  <span className="font-medium">Pay via Phone Number</span>
-                  <span className="text-sm text-gray-500">
-                    (GPay / PhonePe)
-                  </span>
-                </label>
-                <label className="flex items-center gap-2 p-3 border rounded-md cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="cod"
-                    checked={paymentMethod === "cod"}
-                    onChange={() => setPaymentMethod("cod")}
-                  />
-                  <span className="font-medium">Cash on Delivery</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-2">
+                    <span className="font-medium text-sm sm:text-base">Pay via Phone Number</span>
+                    <span className="text-xs sm:text-sm text-gray-500">
+                      (GPay / PhonePe)
+                    </span>
+                  </div>
                 </label>
               </div>
 
               <Button
                 onClick={handlePlaceOrder}
-                className="w-full"
+                className="w-full text-sm sm:text-base py-2 sm:py-3"
                 disabled={isProcessing}
               >
-                {isProcessing
-                  ? "Processing..."
-                  : `Place Order ${paymentMethod === "cod" ? "(COD)" : ""}`}
+                {isProcessing ? "Processing..." : "Place Order"}
               </Button>
             </div>
           )}
 
-          {orderCreated && (paymentMethod === "upi" || paymentMethod === "phonepe") && !paymentConfirmed && (
-            <div className="mt-4 space-y-4 p-4 border rounded-md bg-blue-50">
-              <p className="text-sm font-semibold text-blue-800 text-center">
-                Pay <span className="text-lg">${totalCartAmount}</span> using any UPI app:
+          {orderCreated && !paymentConfirmed && (
+            <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4 p-3 sm:p-4 border rounded-md bg-blue-50">
+              <p className="text-xs sm:text-sm font-semibold text-blue-800 text-center">
+                Pay <span className="text-base sm:text-lg">${totalCartAmount}</span> using any UPI app:
               </p>
 
               <div className="flex justify-center">
-                <div className="bg-white p-3 rounded-lg">
-                  <QRCodeSVG value={getUPIQRValue()} size={180} className="w-full max-w-[180px]" />
+                <div className="bg-white p-2 sm:p-3 rounded-lg">
+                  <QRCodeSVG value={getUPIQRValue()} size={160} className="w-full max-w-[160px] sm:max-w-[180px]" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-md p-3 text-center">
+              <div className="bg-white rounded-md p-2 sm:p-3 text-center">
                 <p className="text-xs text-gray-500 mb-1">Or pay to Phone Number</p>
                 {PHONE_NUMBERS.map((num) => (
-                  <div key={num} className="flex items-center justify-center gap-2">
-                    <p className="text-lg font-bold text-gray-800 select-all">{num}</p>
+                  <div key={num} className="flex items-center justify-center gap-1 sm:gap-2">
+                    <p className="text-base sm:text-lg font-bold text-gray-800 select-all text-xs sm:text-sm">{num}</p>
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(num);
@@ -293,7 +274,7 @@ function ShoppingCheckout() {
                 ))}
               </div>
 
-              <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
+              <ol className="text-xs sm:text-sm text-blue-700 space-y-1 list-decimal list-inside">
                 <li>Open your UPI app and send payment to the scanned QR or phone number</li>
                 <li>Complete the payment in the app</li>
                 <li>Return here and click "I have paid"</li>
@@ -301,7 +282,7 @@ function ShoppingCheckout() {
 
               <Button
                 onClick={handleConfirmPayment}
-                className="w-full"
+                className="w-full text-sm sm:text-base py-2 sm:py-3"
                 disabled={isConfirming}
               >
                 {isConfirming ? "Confirming..." : "I have paid"}

@@ -127,14 +127,14 @@ function SearchProducts() {
 
   return (
     <div className="container mx-auto md:px-6 px-4 py-8">
-      <div className="flex justify-center mb-8">
+      <div className="flex justify-center mb-6 sm:mb-8">
         <div className="w-full flex items-center relative">
-          <SearchIcon className="absolute left-4 w-5 h-5 text-gray-400" />
+          <SearchIcon className="absolute left-4 size-5 text-gray-400 pointer-events-none" />
           <Input
             value={keyword}
             name="keyword"
             onChange={(event) => setKeyword(event.target.value)}
-            className="py-6 pl-12"
+            className="py-5 sm:py-6 pl-12 text-base sm:text-sm"
             placeholder="Search products..."
           />
         </div>
@@ -154,9 +154,9 @@ function SearchProducts() {
                 onClick={() => handleCategorySearch(cat.id)}
                 className="cursor-pointer hover:shadow-md transition-all duration-200 hover:-translate-y-0.5"
               >
-                <CardContent className="flex flex-col items-center p-4">
-                  <cat.icon className="w-8 h-8 mb-2 text-[#6B1E2E]" />
-                  <span className="text-sm font-medium text-gray-700">{cat.label}</span>
+                <CardContent className="flex flex-col items-center p-3 sm:p-4 min-h-[5rem] sm:min-h-0 justify-center">
+                  <cat.icon className="size-6 sm:size-8 mb-1.5 sm:mb-2 text-[#6B1E2E]" />
+                  <span className="text-xs sm:text-sm font-medium text-gray-700 text-center">{cat.label}</span>
                 </CardContent>
               </Card>
             ))}

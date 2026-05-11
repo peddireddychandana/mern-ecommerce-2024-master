@@ -91,23 +91,23 @@ function ProductImageUpload({
             htmlFor="image-upload"
             className={`${
               isEditMode ? "cursor-not-allowed" : ""
-            } flex flex-col items-center justify-center h-32 cursor-pointer`}
+            } flex flex-col items-center justify-center min-h-[120px] sm:h-32 cursor-pointer`}
           >
             <UploadCloudIcon className="w-10 h-10 text-muted-foreground mb-2" />
-            <span>Drag & drop or click to upload image</span>
+            <span className="text-sm sm:text-base">Drag & drop or click to upload image</span>
           </Label>
         ) : imageLoadingState ? (
           <Skeleton className="h-10 bg-gray-100" />
         ) : (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <FileIcon className="w-8 text-primary mr-2 h-8" />
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center min-w-0">
+              <FileIcon className="w-8 text-primary mr-2 h-8 shrink-0" />
             </div>
-            <p className="text-sm font-medium">{imageFile.name}</p>
+            <p className="text-xs sm:text-sm font-medium truncate">{imageFile.name}</p>
             <Button
               variant="ghost"
               size="icon"
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] shrink-0"
               onClick={handleRemoveImage}
             >
               <XIcon className="w-4 h-4" />

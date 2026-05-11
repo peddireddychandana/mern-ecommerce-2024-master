@@ -6,7 +6,7 @@ function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="container mx-auto px-4 py-14">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-10">
 
           {/* BRAND */}
           <div>
@@ -43,7 +43,7 @@ function Footer() {
             <h4 className="text-white text-sm font-semibold uppercase tracking-wider mb-5">
               Quick Links
             </h4>
-            <ul className="space-y-3">
+            <ul className="space-y-1">
               {[
                 { label: "Home", path: "/shop/home" },
                 { label: "Shop / Products", path: "/shop/listing" },
@@ -54,9 +54,9 @@ function Footer() {
                 <li key={i}>
                   <Link
                     to={link.path}
-                    className="flex items-center gap-1 text-sm text-gray-400 hover:text-yellow-400 transition-colors duration-200"
+                    className="flex items-center gap-1 text-sm text-gray-400 hover:text-yellow-400 transition-colors duration-200 min-h-[44px] px-2"
                   >
-                    <ChevronRight className="w-3 h-3" />
+                    <ChevronRight className="w-3 h-3 shrink-0" />
                     {link.label}
                   </Link>
                 </li>
@@ -69,7 +69,7 @@ function Footer() {
             <h4 className="text-white text-sm font-semibold uppercase tracking-wider mb-5">
               Categories
             </h4>
-            <ul className="space-y-3">
+            <ul className="space-y-1">
               {[
                 "Sarees",
                 "Shirts",
@@ -80,9 +80,9 @@ function Footer() {
                 <li key={i}>
                   <Link
                     to="/shop/listing"
-                    className="flex items-center gap-1 text-sm text-gray-400 hover:text-yellow-400 transition-colors duration-200"
+                    className="flex items-center gap-1 text-sm text-gray-400 hover:text-yellow-400 transition-colors duration-200 min-h-[44px] px-2"
                   >
-                    <ChevronRight className="w-3 h-3" />
+                    <ChevronRight className="w-3 h-3 shrink-0" />
                     {cat}
                   </Link>
                 </li>
@@ -115,13 +115,13 @@ function Footer() {
                 <div className="text-sm text-gray-400">
                   <a
                     href="tel:+917702123357"
-                    className="block hover:text-yellow-400 transition-colors"
+                    className="block hover:text-yellow-400 transition-colors min-h-[44px] flex items-center"
                   >
                     +91 7702123357
                   </a>
                   <a
                     href="tel:+917013820268"
-                    className="block hover:text-yellow-400 transition-colors"
+                    className="block hover:text-yellow-400 transition-colors min-h-[44px] flex items-center"
                   >
                     +91 7013820268
                   </a>
@@ -129,14 +129,14 @@ function Footer() {
               </div>
 
               <div className="pt-2">
-                <Button asChild className="w-full bg-green-600 hover:bg-green-700 text-white text-sm gap-2">
+                <Button asChild className="w-full min-h-[44px] bg-green-600 hover:bg-green-700 text-white text-sm gap-2">
                   <a
                     href="https://wa.me/917702123357"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <svg
-                      className="w-4 h-4"
+                      className="w-4 h-4 shrink-0"
                       fill="currentColor"
                       viewBox="0 0 24 24"
                     >
@@ -146,14 +146,14 @@ function Footer() {
                   </a>
                 </Button>
 
-                <Button asChild className="w-full mt-2 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-sm gap-2">
+                <Button asChild className="w-full min-h-[44px] mt-2 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white text-sm gap-2">
                   <a
                     href="https://instagram.com/sriramakrishnatextiles"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <svg
-                      className="w-4 h-4"
+                      className="w-4 h-4 shrink-0"
                       fill="currentColor"
                       viewBox="0 0 24 24"
                     >

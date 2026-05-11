@@ -104,7 +104,7 @@ function AdminProducts() {
   return (
     <Fragment>
       <div className="mb-5 w-full flex justify-end">
-        <Button onClick={() => setOpenCreateProductsDialog(true)}>
+        <Button onClick={() => setOpenCreateProductsDialog(true)} className="w-full sm:w-auto min-h-[44px]">
           Add New Product
         </Button>
       </div>
@@ -129,7 +129,7 @@ function AdminProducts() {
           setFormData(initialFormData);
         }}
       >
-        <SheetContent side="right" className="overflow-auto">
+        <SheetContent side="right" className="overflow-auto w-full sm:max-w-md">
           <SheetHeader>
             <SheetTitle>
               {currentEditedId !== null ? "Edit Product" : "Add New Product"}

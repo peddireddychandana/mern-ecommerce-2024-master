@@ -131,7 +131,7 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
           {currentEditedId !== null ? "Edit Address" : "Add New Address"}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 px-2 sm:px-6">
         <CommonForm
           formControls={addressFormControls}
           formData={formData}

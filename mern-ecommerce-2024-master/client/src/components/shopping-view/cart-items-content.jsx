@@ -76,46 +76,48 @@ function UserCartItemsContent({ cartItem }) {
       <img
         src={cartItem?.image}
         alt={cartItem?.title}
-        className="w-16 h-16 sm:w-20 sm:h-20 rounded object-cover shrink-0"
+        className="size-14 sm:size-20 rounded object-cover shrink-0"
       />
       <div className="min-w-0 flex-1">
         <h3 className="font-extrabold text-sm sm:text-base truncate">{cartItem?.title}</h3>
-        <div className="flex items-center gap-2 mt-1">
+        <div className="flex items-center gap-2 mt-1.5">
           <Button
             variant="outline"
-            className="h-8 w-8 rounded-full"
+            className="size-8 sm:size-9 rounded-full"
             size="icon"
             disabled={cartItem?.quantity === 1}
             onClick={() => handleUpdateQuantity(cartItem, "minus")}
           >
-            <Minus className="w-4 h-4" />
+            <Minus className="size-4" />
             <span className="sr-only">Decrease</span>
           </Button>
-          <span className="font-semibold">{cartItem?.quantity}</span>
+          <span className="font-semibold min-w-[1.5rem] text-center">{cartItem?.quantity}</span>
           <Button
             variant="outline"
-            className="h-8 w-8 rounded-full"
+            className="size-8 sm:size-9 rounded-full"
             size="icon"
             onClick={() => handleUpdateQuantity(cartItem, "plus")}
           >
-            <Plus className="w-4 h-4" />
-            <span className="sr-only">Decrease</span>
+            <Plus className="size-4" />
+            <span className="sr-only">Increase</span>
           </Button>
         </div>
       </div>
-      <div className="flex flex-col items-end">
-        <p className="font-semibold">
+      <div className="flex flex-col items-end shrink-0">
+        <p className="font-semibold text-sm sm:text-base whitespace-nowrap">
           $
           {(
             (cartItem?.salePrice > 0 ? cartItem?.salePrice : cartItem?.price) *
             cartItem?.quantity
           ).toFixed(2)}
         </p>
-        <Trash
+        <button
           onClick={() => handleCartItemDelete(cartItem)}
-          className="cursor-pointer mt-1"
-          size={20}
-        />
+          className="mt-1.5 p-1.5 hover:bg-destructive/10 rounded-full transition-colors"
+          aria-label="Delete item"
+        >
+          <Trash className="size-4 sm:size-5 text-destructive" />
+        </button>
       </div>
     </div>
   );

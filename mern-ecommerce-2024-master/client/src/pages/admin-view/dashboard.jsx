@@ -49,7 +49,7 @@ function AdminDashboard() {
       />
 
       {/* UPLOAD BUTTON */}
-      <Button onClick={handleUploadFeatureImage} className="mt-5 w-full">
+      <Button onClick={handleUploadFeatureImage} className="mt-5 w-full min-h-[44px]">
         Upload Feature Image
       </Button>
 

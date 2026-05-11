@@ -22,16 +22,16 @@ function AddressCard({
           : "border-black"
       }`}
     >
-      <CardContent className="grid p-4 gap-4">
-        <Label>Address: {addressInfo?.address}</Label>
-        <Label>City: {addressInfo?.city}</Label>
-        <Label>pincode: {addressInfo?.pincode}</Label>
-        <Label>Phone: {addressInfo?.phone}</Label>
-        <Label>Notes: {addressInfo?.notes}</Label>
+      <CardContent className="grid p-3 sm:p-4 gap-2 sm:gap-4 break-words">
+        <Label className="text-sm sm:text-base">Address: {addressInfo?.address}</Label>
+        <Label className="text-sm sm:text-base">City: {addressInfo?.city}</Label>
+        <Label className="text-sm sm:text-base">pincode: {addressInfo?.pincode}</Label>
+        <Label className="text-sm sm:text-base">Phone: {addressInfo?.phone}</Label>
+        <Label className="text-sm sm:text-base">Notes: {addressInfo?.notes}</Label>
       </CardContent>
-      <CardFooter className="p-3 flex justify-between">
-        <Button onClick={() => handleEditAddress(addressInfo)}>Edit</Button>
-        <Button onClick={() => handleDeleteAddress(addressInfo)}>Delete</Button>
+      <CardFooter className="p-3 flex flex-col sm:flex-row gap-2 sm:justify-between">
+        <Button onClick={() => handleEditAddress(addressInfo)} className="w-full sm:w-auto min-h-[2.75rem]">Edit</Button>
+        <Button onClick={() => handleDeleteAddress(addressInfo)} className="w-full sm:w-auto min-h-[2.75rem]">Delete</Button>
       </CardFooter>
     </Card>
   );

@@ -55,13 +55,13 @@ function BestSellers() {
   }
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-10 sm:py-16 bg-white">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8 sm:mb-12">
           <span className="text-sm tracking-[4px] uppercase text-[#6B1E2E] font-medium">
             Best Sellers
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold mt-2 text-gray-900">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mt-2 text-gray-900">
             Most Loved by Customers
           </h2>
           <div className="w-20 h-0.5 bg-gradient-to-r from-[#6B1E2E] to-yellow-500 mx-auto mt-4" />
@@ -87,11 +87,11 @@ function BestSellers() {
                 </Badge>
               </div>
 
-              <div className="p-4">
-                <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+              <div className="p-3 sm:p-4">
+                <p className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider mb-1">
                   {categoryOptionsMap[product.category] || product.category}
                 </p>
-                <h3 className="font-semibold text-gray-900 text-sm leading-snug mb-2 line-clamp-2">
+                <h3 className="font-semibold text-gray-900 text-xs sm:text-sm leading-snug mb-2 line-clamp-2">
                   {product.title}
                 </h3>
 
@@ -102,7 +102,7 @@ function BestSellers() {
                   </span>
                 </div>
 
-                <p className="text-lg font-bold text-[#6B1E2E] mb-3">
+                <p className="text-base sm:text-lg font-bold text-[#6B1E2E] mb-3">
                   ₹{(product.salePrice || product.price).toLocaleString()}
                   {product.salePrice && (
                     <span className="text-sm text-gray-400 line-through ml-2">
@@ -113,9 +113,9 @@ function BestSellers() {
 
                 <Button
                   onClick={() => handleAddtoCart(product._id)}
-                  className="w-full bg-[#6B1E2E] hover:bg-[#5a1927] text-white text-sm gap-2 transition-all duration-300"
+                  className="w-full bg-[#6B1E2E] hover:bg-[#5a1927] text-white text-xs sm:text-sm gap-2 transition-all duration-300 min-h-[40px] sm:min-h-0"
                 >
-                  <ShoppingCart className="w-4 h-4" />
+                  <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   Add to Cart
                 </Button>
               </div>

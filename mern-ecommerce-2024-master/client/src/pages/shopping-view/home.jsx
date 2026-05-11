@@ -172,7 +172,7 @@ function ShoppingHome() {
 
             {/* HERO CONTENT */}
             <div className="absolute inset-0 flex items-center">
-              <div className="max-w-2xl pl-10 md:pl-20 lg:pl-32 text-white">
+              <div className="max-w-2xl px-6 sm:pl-10 md:pl-20 lg:pl-32 text-white">
 
                 {/* TAGLINE */}
                 <motion.p
@@ -189,7 +189,7 @@ function ShoppingHome() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="text-5xl md:text-7xl lg:text-8xl font-extralight leading-[1.05]"
+                  className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-extralight leading-[1.05]"
                 >
                   Discover Your
                   <span className="block text-yellow-400 font-semibold italic">
@@ -210,7 +210,7 @@ function ShoppingHome() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.7 }}
-                  className="text-gray-200 text-sm md:text-base max-w-md leading-relaxed mb-8"
+                  className="text-gray-200 text-xs sm:text-sm md:text-base max-w-md leading-relaxed mb-8"
                 >
                   Curated fashion pieces designed to elevate your everyday look with elegance and confidence.
                 </motion.p>
@@ -229,7 +229,7 @@ function ShoppingHome() {
                         behavior: "smooth",
                       })
                     }
-                    className="bg-yellow-400 text-black px-8 py-6 rounded-full font-medium hover:scale-105 transition"
+                    className="bg-yellow-400 text-black px-6 sm:px-8 py-4 sm:py-6 rounded-full font-medium hover:scale-105 transition text-sm sm:text-base"
                   >
                     Shop Now
                   </Button>
@@ -237,7 +237,7 @@ function ShoppingHome() {
                   <Button
                     onClick={() => navigate("/shop/listing")}
                     variant="outline"
-                    className="border-white text-black px-8 py-6 rounded-full hover:bg-white hover:text-black transition"
+                    className="border-white text-black px-6 sm:px-8 py-4 sm:py-6 rounded-full hover:bg-white hover:text-black transition text-sm sm:text-base"
                   >
                     Explore
                   </Button>
@@ -275,10 +275,10 @@ function ShoppingHome() {
 
       {/* ---------------- CATEGORY ---------------- */}
       <FadeUp>
-        <section className="py-14 bg-gray-50">
+        <section className="py-10 sm:py-14 bg-gray-50">
           <div className="container mx-auto px-4">
 
-            <h2 className="text-3xl font-bold text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-10">
               Shop by Category
             </h2>
 
@@ -311,10 +311,10 @@ function ShoppingHome() {
 
       {/* ---------------- PRODUCTS ---------------- */}
       <FadeUp>
-        <section ref={productsRef} className="py-14">
+        <section ref={productsRef} className="py-10 sm:py-14">
           <div className="container mx-auto px-4">
 
-            <h2 className="text-3xl font-bold text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-10">
               Featured Products
             </h2>
 

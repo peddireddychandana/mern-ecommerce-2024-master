@@ -85,7 +85,7 @@ function HeaderRightContent() {
           onClick={() => setOpenCartSheet(true)}
           variant="outline"
           size="icon"
-          className="relative transition-all duration-300 hover:scale-105"
+          className="relative min-h-[44px] min-w-[44px] transition-all duration-300 hover:scale-105"
         >
           <ShoppingCart className="w-6 h-6" />
           <span className="absolute top-[-5px] right-[2px] text-sm font-bold">
@@ -102,8 +102,8 @@ function HeaderRightContent() {
       {/* PROFILE */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Avatar className="bg-black cursor-pointer transition-all duration-300 hover:scale-110">
-            <AvatarFallback className="bg-black text-white font-bold">
+          <Avatar className="bg-black cursor-pointer min-h-[44px] min-w-[44px] transition-all duration-300 hover:scale-110">
+            <AvatarFallback className="bg-black text-white font-bold text-base">
               {user?.userName?.[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -133,8 +133,8 @@ function HeaderRightContent() {
 
 function ShoppingHeader() {
   return (
-    <header className="fixed top-0 z-50 w-full bg-white border-b shadow-sm animate-slideDown">
-      <div className="flex h-16 items-center justify-between px-4 md:px-6">
+    <header className="fixed top-0 z-50 w-full bg-white border-b shadow-sm animate-slideDown overflow-hidden">
+      <div className="flex h-16 items-center justify-between px-4 md:px-6 max-w-full">
 
         {/* LOGO */}
         <Link
@@ -150,14 +150,18 @@ function ShoppingHeader() {
         {/* MOBILE */}
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="lg:hidden">
+            <Button variant="outline" size="icon" className="lg:hidden min-h-[44px] min-w-[44px]">
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
 
-          <SheetContent side="left">
-            <MenuItems />
-            <HeaderRightContent />
+          <SheetContent side="left" className="w-[280px] sm:w-[350px] overflow-y-auto">
+            <div className="flex flex-col h-full py-6">
+              <MenuItems />
+              <div className="mt-8 border-t pt-6">
+                <HeaderRightContent />
+              </div>
+            </div>
           </SheetContent>
         </Sheet>
 

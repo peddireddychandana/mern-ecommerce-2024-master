@@ -16,7 +16,7 @@ import {
   fetchAllFilteredProducts,
   fetchProductDetails,
 } from "@/store/shop/products-slice";
-import { ArrowUpDownIcon } from "lucide-react";
+import { ArrowUpDownIcon, SlidersHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
@@ -36,6 +36,7 @@ function ShoppingListing() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const { toast } = useToast();
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const categorySearchParam = searchParams.get("category");
 
@@ -176,14 +177,30 @@ function ShoppingListing() {
       className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 p-4 md:p-6"
     >
       {/* FILTER */}
-      <ProductFilter filters={filters} handleFilter={handleFilter} />
+      <ProductFilter
+        filters={filters}
+        handleFilter={handleFilter}
+        isMobileOpen={showMobileFilters}
+        onClose={() => setShowMobileFilters(false)}
+      />
 
       {/* PRODUCTS */}
       <div className="bg-background w-full rounded-lg shadow-sm">
 
         {/* HEADER */}
         <div className="p-4 border-b flex items-center justify-between">
-          <h2 className="text-lg font-extrabold">All Products</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-extrabold">All Products</h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowMobileFilters(true)}
+              className="md:hidden"
+            >
+              <SlidersHorizontal className="h-4 w-4 mr-1" />
+              Filters
+            </Button>
+          </div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

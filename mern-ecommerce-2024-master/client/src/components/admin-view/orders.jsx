@@ -53,6 +53,7 @@ function AdminOrdersView() {
         <CardTitle>All Orders</CardTitle>
       </CardHeader>
       <CardContent>
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -100,6 +101,8 @@ function AdminOrdersView() {
                             onClick={() =>
                               handleFetchOrderDetails(orderItem?._id)
                             }
+                            size="sm"
+                            className="whitespace-nowrap min-h-[44px] text-xs sm:text-sm px-2 sm:px-4"
                           >
                             View Details
                           </Button>
@@ -109,7 +112,9 @@ function AdminOrdersView() {
                       <TableCell>
                         <Button
                           variant="destructive"
+                          size="sm"
                           onClick={() => handleDeleteOrder(orderItem?._id)}
+                          className="whitespace-nowrap min-h-[44px] text-xs sm:text-sm px-2 sm:px-4"
                         >
                           Delete
                         </Button>
@@ -119,6 +124,7 @@ function AdminOrdersView() {
               : null}
           </TableBody>
         </Table>
+        </div>
       </CardContent>
     </Card>
   );
