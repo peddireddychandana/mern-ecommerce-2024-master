@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import UserCartItemsContent from "@/components/shopping-view/cart-items-content";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { createNewOrder, confirmUPIPayment } from "@/store/shop/order-slice";
 import { useToast } from "@/components/ui/use-toast";
 import { QRCodeSVG } from "qrcode.react";
@@ -19,6 +20,7 @@ function ShoppingCheckout() {
   const [isConfirming, setIsConfirming] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   const UPI_ID = "125006216930@cnrb";
@@ -174,7 +176,7 @@ function ShoppingCheckout() {
             Order ID: {orderId}
           </p>
           <Button
-            onClick={() => (window.location.href = "/shop/account")}
+            onClick={() => navigate("/shop/account")}
             className="w-full"
           >
             View Orders
