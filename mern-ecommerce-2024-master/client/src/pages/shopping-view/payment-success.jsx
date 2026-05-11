@@ -17,7 +17,7 @@ function PaymentSuccessPage() {
           <CardTitle className="text-xl sm:text-2xl">Payment Submitted Successfully!</CardTitle>
         </CardHeader>
         <p className="text-sm text-gray-600 mt-2">
-          Your payment will be verified within 5-10 minutes.
+          Your payment is under verification and may take some time.
         </p>
         <Button className="mt-5 w-full sm:w-auto" onClick={() => navigate("/shop/account")}>
           View Orders
