@@ -21,116 +21,67 @@ import {
 import { Badge } from "../ui/badge";
 
 function ShoppingOrders() {
-  const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { orderList, orderDetails } = useSelector((state) => state.shopOrder);
 
-  function handleFetchOrderDetails(getId) {
-    dispatch(getOrderDetails(getId));
-  }
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
 
-  function handleDeleteOrder(getId) {
-    dispatch(deleteOrder(getId)).then((data) => {
+  const handleFetchOrderDetails = (id) => {
+    setSelectedOrderId(id);
+    dispatch(getOrderDetails(id));
+  };
+
+  const handleDeleteOrder = (id) => {
+    dispatch(deleteOrder(id)).then((data) => {
       if (data?.payload?.success) {
         dispatch(getAllOrdersByUserId(user?.id));
       }
     });
-  }
+  };
 
   useEffect(() => {
-    dispatch(getAllOrdersByUserId(user?.id));
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (orderDetails !== null) setOpenDetailsDialog(true);
-  }, [orderDetails]);
+    if (user?.id) {
+      dispatch(getAllOrdersByUserId(user?.id));
+    }
+  }, [dispatch, user?.id]);
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
-        <CardTitle>Order History</CardTitle>
+        <CardTitle className="text-lg md:text-xl">
+          Order History
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        {/* Desktop table */}
-        <div className="hidden md:block">
-          <Table>
+
+      <CardContent className="space-y-4">
+        {/* ================= TABLE VIEW (DESKTOP) ================= */}
+        <div className="hidden md:block w-full overflow-x-auto">
+          <Table className="min-w-[600px] w-full">
             <TableHeader>
               <TableRow>
                 <TableHead>Order ID</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Price</TableHead>
-                <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
-              {orderList && orderList.length > 0
-                ? orderList.map((orderItem) => (
-                    <TableRow key={orderItem?._id}>
-                      <TableCell className="max-w-[120px] truncate">{orderItem?._id}</TableCell>
-                      <TableCell>{orderItem?.orderDate.split("T")[0]}</TableCell>
-                      <TableCell>
-                        <Badge
-                          className={`py-1 px-3 ${
-                            orderItem?.orderStatus === "confirmed"
-                              ? "bg-green-500"
-                              : orderItem?.orderStatus === "rejected"
-                              ? "bg-red-600"
-                              : "bg-black"
-                          }`}
-                        >
-                          {orderItem?.orderStatus}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>${orderItem?.totalAmount}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Dialog
-                            open={openDetailsDialog}
-                            onOpenChange={() => {
-                              setOpenDetailsDialog(false);
-                              dispatch(resetOrderDetails());
-                            }}
-                          >
-                            <Button
-                              size="sm"
-                              onClick={() =>
-                                handleFetchOrderDetails(orderItem?._id)
-                              }
-                            >
-                              View Details
-                            </Button>
-                            <ShoppingOrderDetailsView orderDetails={orderDetails} />
-                          </Dialog>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDeleteOrder(orderItem?._id)}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                : null}
-            </TableBody>
-          </Table>
-        </div>
-        {/* Mobile cards */}
-        <div className="md:hidden grid gap-4">
-          {orderList && orderList.length > 0
-            ? orderList.map((orderItem) => (
-                <div key={orderItem?._id} className="rounded-lg border p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground truncate max-w-[50%]">
-                      ID: {orderItem?._id}
-                    </span>
+              {orderList?.map((orderItem) => (
+                <TableRow key={orderItem?._id}>
+                  <TableCell className="truncate max-w-[120px]">
+                    {orderItem?._id}
+                  </TableCell>
+
+                  <TableCell className="whitespace-nowrap">
+                    {orderItem?.orderDate?.split("T")[0]}
+                  </TableCell>
+
+                  <TableCell>
                     <Badge
-                      className={`py-1 px-3 text-xs ${
+                      className={`px-3 py-1 text-xs ${
                         orderItem?.orderStatus === "confirmed"
                           ? "bg-green-500"
                           : orderItem?.orderStatus === "rejected"
@@ -140,46 +91,118 @@ function ShoppingOrders() {
                     >
                       {orderItem?.orderStatus}
                     </Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Date</span>
-                    <span>{orderItem?.orderDate.split("T")[0]}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Price</span>
-                    <span className="font-medium">${orderItem?.totalAmount}</span>
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <Dialog
-                      open={openDetailsDialog}
-                      onOpenChange={() => {
-                        setOpenDetailsDialog(false);
-                        dispatch(resetOrderDetails());
-                      }}
-                    >
+                  </TableCell>
+
+                  <TableCell className="font-medium">
+                    ${orderItem?.totalAmount}
+                  </TableCell>
+
+                  <TableCell>
+                    <div className="flex gap-2 flex-wrap">
+                      <Dialog>
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            handleFetchOrderDetails(orderItem?._id)
+                          }
+                        >
+                          View
+                        </Button>
+
+                        {selectedOrderId === orderItem?._id && (
+                          <ShoppingOrderDetailsView
+                            orderDetails={orderDetails}
+                          />
+                        )}
+                      </Dialog>
+
                       <Button
+                        variant="destructive"
                         size="sm"
-                        className="flex-1"
-                        onClick={() =>
-                          handleFetchOrderDetails(orderItem?._id)
-                        }
+                        onClick={() => handleDeleteOrder(orderItem?._id)}
                       >
-                        View Details
+                        Delete
                       </Button>
-                      <ShoppingOrderDetailsView orderDetails={orderDetails} />
-                    </Dialog>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handleDeleteOrder(orderItem?._id)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              ))
-            : null}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* ================= MOBILE VIEW (CARDS) ================= */}
+        <div className="grid gap-4 md:hidden">
+          {orderList?.map((orderItem) => (
+            <div
+              key={orderItem?._id}
+              className="border rounded-lg p-4 space-y-3 w-full"
+            >
+              {/* Header */}
+              <div className="flex justify-between items-start gap-2">
+                <p className="text-xs text-gray-500 break-all">
+                  {orderItem?._id}
+                </p>
+
+                <Badge
+                  className={`text-xs px-2 py-1 ${
+                    orderItem?.orderStatus === "confirmed"
+                      ? "bg-green-500"
+                      : orderItem?.orderStatus === "rejected"
+                      ? "bg-red-600"
+                      : "bg-black"
+                  }`}
+                >
+                  {orderItem?.orderStatus}
+                </Badge>
+              </div>
+
+              {/* Info */}
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Date</span>
+                <span>
+                  {orderItem?.orderDate?.split("T")[0]}
+                </span>
+              </div>
+
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Price</span>
+                <span className="font-medium">
+                  ${orderItem?.totalAmount}
+                </span>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-2">
+                <Dialog>
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    onClick={() =>
+                      handleFetchOrderDetails(orderItem?._id)
+                    }
+                  >
+                    View
+                  </Button>
+
+                  {selectedOrderId === orderItem?._id && (
+                    <ShoppingOrderDetailsView
+                      orderDetails={orderDetails}
+                    />
+                  )}
+                </Dialog>
+
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => handleDeleteOrder(orderItem?._id)}
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
