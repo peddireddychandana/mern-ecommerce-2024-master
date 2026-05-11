@@ -28,13 +28,14 @@ mongoose
 
 const allowedOrigins = [
   "http://localhost:5173",
+  "https://ecommerce-frontend-n724.onrender.com",
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
 app.use(
   cors({
     origin: allowedOrigins,
-    methods: ["GET", "POST", "DELETE", "PUT"],
+    methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
     allowedHeaders: [
       "Content-Type",
       "Authorization",
@@ -45,6 +46,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.options("*", cors());
 
 app.use(cookieParser());
 app.use(express.json());
