@@ -1,6 +1,7 @@
 const Order = require("../../models/Order");
 const Cart = require("../../models/Cart");
 const Product = require("../../models/Product");
+const { imageUploadUtil } = require("../../helpers/cloudinary");
 const { notifyNewOrder, notifyPaymentVerification } = require("../../helpers/email");
 
 const createOrder = async (req, res) => {
@@ -51,9 +52,35 @@ const createOrder = async (req, res) => {
   }
 };
 
+const uploadPaymentScreenshot = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded",
+      });
+    }
+
+    const b64 = Buffer.from(req.file.buffer).toString("base64");
+    const url = "data:" + req.file.mimetype + ";base64," + b64;
+    const result = await imageUploadUtil(url);
+
+    res.json({
+      success: true,
+      screenshotUrl: result.url,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Error uploading screenshot",
+    });
+  }
+};
+
 const confirmUPIPayment = async (req, res) => {
   try {
-    const { orderId, transactionRef } = req.body;
+    const { orderId, transactionRef, screenshotUrl } = req.body;
 
     const order = await Order.findById(orderId);
 
@@ -64,9 +91,19 @@ const confirmUPIPayment = async (req, res) => {
       });
     }
 
+    if (order.orderStatus === "awaiting_verification") {
+      return res.status(400).json({
+        success: false,
+        message: "Payment already submitted for this order",
+      });
+    }
+
     order.paymentStatus = "awaiting_verification";
     order.orderStatus = "awaiting_verification";
     order.paymentId = transactionRef || "UPI-" + Date.now();
+    if (screenshotUrl) {
+      order.paymentScreenshot = screenshotUrl;
+    }
 
     await order.save();
 
@@ -166,6 +203,7 @@ const deleteOrder = async (req, res) => {
 
 module.exports = {
   createOrder,
+  uploadPaymentScreenshot,
   confirmUPIPayment,
   getAllOrdersByUser,
   getOrderDetails,

@@ -3,11 +3,14 @@ import img from "../../assets/account.jpg";
 import { useDispatch, useSelector } from "react-redux";
 import UserCartItemsContent from "@/components/shopping-view/cart-items-content";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { createNewOrder, confirmUPIPayment } from "@/store/shop/order-slice";
+import { createNewOrder, uploadPaymentScreenshot, confirmUPIPayment } from "@/store/shop/order-slice";
 import { useToast } from "@/components/ui/use-toast";
 import { QRCodeSVG } from "qrcode.react";
+import { UploadCloudIcon, FileIcon, XIcon, Loader2 } from "lucide-react";
 
 function ShoppingCheckout() {
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -19,6 +22,13 @@ function ShoppingCheckout() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [screenshotFile, setScreenshotFile] = useState(null);
+  const [screenshotPreview, setScreenshotPreview] = useState(null);
+  const [screenshotUrl, setScreenshotUrl] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [transactionId, setTransactionId] = useState("");
+  const [fileError, setFileError] = useState("");
+  const inputRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -26,6 +36,7 @@ function ShoppingCheckout() {
   const UPI_ID = "125006216930@cnrb";
   const BUSINESS_NAME = "SRI RAMAKRISHNA TEXTILES";
   const PHONE_NUMBERS = ["7702123357", "7013820268"];
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
   const totalCartAmount =
     cartItems && cartItems.items && cartItems.items.length > 0
@@ -115,51 +126,140 @@ function ShoppingCheckout() {
     });
   }
 
-  function handlePayWithUPI() {
-    const upiLink = getUPILink();
-    window.location.href = upiLink;
+  function handleFileChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setFileError("");
+
+    const validTypes = ["image/jpeg", "image/png", "image/jpg"];
+    if (!validTypes.includes(file.type)) {
+      setFileError("Only JPG and PNG files are allowed");
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      setFileError("File size must be less than 5MB");
+      return;
+    }
+
+    setScreenshotFile(file);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setScreenshotPreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
   }
 
-  function handleConfirmPayment() {
+  function handleRemoveScreenshot() {
+    setScreenshotFile(null);
+    setScreenshotPreview(null);
+    setScreenshotUrl(null);
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+  }
+
+  function handleDragOver(event) {
+    event.preventDefault();
+  }
+
+  function handleDrop(event) {
+    event.preventDefault();
+    const file = event.dataTransfer.files?.[0];
+    if (!file) return;
+
+    setFileError("");
+
+    const validTypes = ["image/jpeg", "image/png", "image/jpg"];
+    if (!validTypes.includes(file.type)) {
+      setFileError("Only JPG and PNG files are allowed");
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      setFileError("File size must be less than 5MB");
+      return;
+    }
+
+    setScreenshotFile(file);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setScreenshotPreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function handleConfirmPayment() {
     setIsConfirming(true);
+
     const storedOrderId = JSON.parse(
       sessionStorage.getItem("currentOrderId")
     );
 
-    dispatch(
-      confirmUPIPayment({
-        orderId: storedOrderId,
-        transactionRef: "UPI-" + Date.now(),
-      })
-    ).then((data) => {
-      setIsConfirming(false);
-      if (data?.payload?.success) {
+    try {
+      let uploadedUrl = screenshotUrl;
+
+      if (screenshotFile && !uploadedUrl) {
+        setIsUploading(true);
+        const uploadResult = await dispatch(uploadPaymentScreenshot(screenshotFile)).unwrap();
+        if (uploadResult?.success) {
+          uploadedUrl = uploadResult.screenshotUrl;
+          setScreenshotUrl(uploadedUrl);
+        } else {
+          throw new Error("Screenshot upload failed");
+        }
+        setIsUploading(false);
+      }
+
+      const result = await dispatch(
+        confirmUPIPayment({
+          orderId: storedOrderId,
+          transactionRef: transactionId || "UPI-" + Date.now(),
+          screenshotUrl: uploadedUrl,
+        })
+      ).unwrap();
+
+      if (result?.success) {
         setPaymentConfirmed(true);
         sessionStorage.removeItem("currentOrderId");
         toast({
           title: "Payment submitted for admin verification.",
         });
       } else {
-        toast({
-          title: "Payment confirmation failed. Please contact support.",
-          variant: "destructive",
-        });
+        throw new Error("Payment confirmation failed");
       }
-    });
+    } catch (error) {
+      setIsConfirming(false);
+      setIsUploading(false);
+      toast({
+        title: error?.message || "Payment confirmation failed. Please contact support.",
+        variant: "destructive",
+      });
+    }
   }
 
   if (paymentConfirmed) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] px-4 py-8">
         <div className="bg-white rounded-lg shadow-lg p-6 sm:p-8 max-w-md w-full text-center">
-          <div className="text-4xl sm:text-6xl mb-4">&#10003;</div>
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
           <h2 className="text-xl sm:text-2xl font-bold mb-2">
-            Payment Submitted for Verification
+            Payment Submitted Successfully!
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
-            Your payment is being verified by the admin. You will receive a confirmation once approved.
+          <p className="text-sm sm:text-base text-gray-600 mb-2">
+            Your payment is being verified by the admin.
           </p>
-          <p className="text-sm text-gray-500 mb-4 sm:mb-6 break-all">
+          <p className="text-sm font-medium text-amber-600 mb-4">
+            Your payment will be verified within 5-10 minutes.
+          </p>
+          <p className="text-xs text-gray-500 mb-4 sm:mb-6 break-all">
             Order ID: {orderId}
           </p>
           <Button
@@ -274,19 +374,93 @@ function ShoppingCheckout() {
                 ))}
               </div>
 
-              <ol className="text-xs sm:text-sm text-blue-700 space-y-1 list-decimal list-inside">
-                <li>Open your UPI app and send payment to the scanned QR or phone number</li>
-                <li>Complete the payment in the app</li>
-                <li>Return here and click "I have paid"</li>
-              </ol>
+              <div className="text-xs sm:text-sm text-blue-700 space-y-1">
+                <p className="font-medium">Instructions:</p>
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>Pay using any UPI app (Google Pay / PhonePe / Paytm)</li>
+                  <li>After successful payment, upload your screenshot below</li>
+                </ol>
+              </div>
+
+              <div className="border-2 border-dashed rounded-lg p-4 bg-white" onDragOver={handleDragOver} onDrop={handleDrop}>
+                <Input
+                  id="screenshot-upload"
+                  type="file"
+                  accept=".jpg,.jpeg,.png"
+                  className="hidden"
+                  ref={inputRef}
+                  onChange={handleFileChange}
+                />
+                {!screenshotFile ? (
+                  <Label htmlFor="screenshot-upload" className="flex flex-col items-center justify-center min-h-[100px] cursor-pointer">
+                    <UploadCloudIcon className="w-8 h-8 text-blue-500 mb-2" />
+                    <span className="text-xs sm:text-sm text-gray-600">Upload payment screenshot (JPG/PNG, max 5MB)</span>
+                  </Label>
+                ) : screenshotPreview ? (
+                  <div className="relative">
+                    <img src={screenshotPreview} alt="Payment screenshot preview" className="w-full max-h-[200px] object-contain rounded-md" />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-1 right-1 h-6 w-6"
+                      onClick={handleRemoveScreenshot}
+                    >
+                      <XIcon className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center min-w-0">
+                      <FileIcon className="w-6 h-6 text-blue-500 mr-2 shrink-0" />
+                      <p className="text-xs sm:text-sm font-medium truncate">{screenshotFile.name}</p>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={handleRemoveScreenshot}>
+                      <XIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+              {fileError && (
+                <p className="text-xs text-red-600">{fileError}</p>
+              )}
+
+              <div className="space-y-1">
+                <Label htmlFor="transactionId" className="text-xs text-blue-800">
+                  Transaction ID (optional)
+                </Label>
+                <Input
+                  id="transactionId"
+                  type="text"
+                  placeholder="Enter UPI transaction reference ID"
+                  value={transactionId}
+                  onChange={(e) => setTransactionId(e.target.value)}
+                  className="text-sm"
+                />
+              </div>
 
               <Button
                 onClick={handleConfirmPayment}
                 className="w-full text-sm sm:text-base py-2 sm:py-3"
-                disabled={isConfirming}
+                disabled={!screenshotFile || isConfirming || isUploading}
               >
-                {isConfirming ? "Confirming..." : "I have paid"}
+                {isUploading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Uploading screenshot...
+                  </span>
+                ) : isConfirming ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Submitting...
+                  </span>
+                ) : (
+                  "I have paid"
+                )}
               </Button>
+
+              <p className="text-xs text-center text-blue-600">
+                Your payment will be verified within 5-10 minutes.
+              </p>
             </div>
           )}
         </div>

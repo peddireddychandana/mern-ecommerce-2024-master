@@ -19,6 +19,14 @@ import {
   deleteOrder,
 } from "@/store/admin/order-slice";
 import { Badge } from "../ui/badge";
+import { ImageIcon } from "lucide-react";
+
+function getStatusBadge(orderStatus) {
+  if (orderStatus === "confirmed") return "bg-green-500";
+  if (orderStatus === "awaiting_verification") return "bg-yellow-500";
+  if (orderStatus === "rejected") return "bg-red-600";
+  return "bg-black";
+}
 
 function AdminOrdersView() {
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
@@ -41,8 +49,6 @@ function AdminOrdersView() {
     dispatch(getAllOrdersForAdmin());
   }, [dispatch]);
 
-  console.log(orderDetails, "orderList");
-
   useEffect(() => {
     if (orderDetails !== null) setOpenDetailsDialog(true);
   }, [orderDetails]);
@@ -59,6 +65,7 @@ function AdminOrdersView() {
             <TableRow>
               <TableHead className="hidden sm:table-cell">Order ID</TableHead>
               <TableHead>Date</TableHead>
+              <TableHead>Payment</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>
@@ -72,18 +79,22 @@ function AdminOrdersView() {
           <TableBody>
             {orderList && orderList.length > 0
               ? orderList.map((orderItem) => (
-                  <TableRow>
-                    <TableCell className="hidden sm:table-cell">{orderItem?._id}</TableCell>
-                    <TableCell>{orderItem?.orderDate.split("T")[0]}</TableCell>
+                  <TableRow key={orderItem?._id}>
+                    <TableCell className="hidden sm:table-cell max-w-[100px] truncate">{orderItem?._id}</TableCell>
+                    <TableCell className="whitespace-nowrap">{orderItem?.orderDate?.split("T")[0]}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        {orderItem?.paymentScreenshot ? (
+                          <ImageIcon className="h-3.5 w-3.5 text-blue-500" title="Screenshot available" />
+                        ) : null}
+                        <Badge variant="outline" className="text-xs">
+                          {orderItem?.paymentStatus}
+                        </Badge>
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge
-                        className={`py-1 px-3 ${
-                          orderItem?.orderStatus === "confirmed"
-                            ? "bg-green-500"
-                            : orderItem?.orderStatus === "rejected"
-                            ? "bg-red-600"
-                            : "bg-black"
-                        }`}
+                        className={`py-1 px-3 ${getStatusBadge(orderItem?.orderStatus)}`}
                       >
                         {orderItem?.orderStatus}
                       </Badge>

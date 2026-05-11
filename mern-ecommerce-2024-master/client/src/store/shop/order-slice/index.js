@@ -21,14 +21,28 @@ export const createNewOrder = createAsyncThunk(
   }
 );
 
+export const uploadPaymentScreenshot = createAsyncThunk(
+  "/order/uploadPaymentScreenshot",
+  async (file) => {
+    const data = new FormData();
+    data.append("payment_screenshot", file);
+    const response = await axios.post(
+      `${API_BASE_URL}/shop/order/upload-screenshot`,
+      data
+    );
+    return response.data;
+  }
+);
+
 export const confirmUPIPayment = createAsyncThunk(
   "/order/confirmUPIPayment",
-  async ({ orderId, transactionRef }) => {
+  async ({ orderId, transactionRef, screenshotUrl }) => {
     const response = await axios.post(
       `${API_BASE_URL}/shop/order/confirm-payment`,
       {
         orderId,
         transactionRef,
+        screenshotUrl,
       }
     );
 

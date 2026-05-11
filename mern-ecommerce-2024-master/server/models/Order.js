@@ -23,6 +23,7 @@ const OrderSchema = new mongoose.Schema({
   orderStatus: String,
   paymentMethod: String,
   paymentStatus: String,
+  paymentScreenshot: String,
   totalAmount: Number,
   orderDate: Date,
   orderUpdateDate: Date,
