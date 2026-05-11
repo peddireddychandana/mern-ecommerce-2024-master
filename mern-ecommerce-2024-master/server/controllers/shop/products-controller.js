@@ -52,6 +52,23 @@ const getFilteredProducts = async (req, res) => {
   }
 };
 
+const getBestSellers = async (req, res) => {
+  try {
+    const products = await Product.find({}).sort({ createdAt: -1 }).limit(4);
+
+    res.status(200).json({
+      success: true,
+      data: products,
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      success: false,
+      message: "Some error occured",
+    });
+  }
+};
+
 const getProductDetails = async (req, res) => {
   try {
     const { id } = req.params;
@@ -76,4 +93,4 @@ const getProductDetails = async (req, res) => {
   }
 };
 
-module.exports = { getFilteredProducts, getProductDetails };
+module.exports = { getFilteredProducts, getProductDetails, getBestSellers };

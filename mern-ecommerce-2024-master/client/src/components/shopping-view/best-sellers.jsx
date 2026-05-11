@@ -1,49 +1,12 @@
 import { Star, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import img1 from "../../assets/pexels1.jpg"
-import img2 from "../../assets/pexels2.jpg"
-import img3 from "../../assets/pexels3.jpg"
-import img4 from "../../assets/yellow.jpg"
-
-const bestSellers = [
-  {
-    id: 1,
-    name: "Pure Kanchipattu Silk Saree",
-    category: "Sarees",
-    price: 4999,
-    image: img1,
-    rating: 5,
-    reviews: 128,
-  },
-  {
-    id: 2,
-    name: "Premium Cotton Formal Shirt",
-    category: "Men's Shirts",
-    price: 1299,
-    image: img3,
-    rating: 4,
-    reviews: 96,
-  },
-  {
-    id: 3,
-    name: "Festival Dress Material",
-    category: "Dress Materials",
-    price: 2499,
-    image: img2,
-    rating: 5,
-    reviews: 204,
-  },
-  {
-    id: 4,
-    name: "Superfine Cotton Fabric",
-    category: "Fabrics",
-    price: 799,
-    image: img4,
-    rating: 4,
-    reviews: 312,
-  },
-]
+import { useEffect } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { fetchBestSellingProducts } from "@/store/shop/products-slice"
+import { addToCart, fetchCartItems } from "@/store/shop/cart-slice"
+import { useToast } from "@/components/ui/use-toast"
+import { categoryOptionsMap } from "@/config"
 
 function StarRating({ rating }) {
   return (
@@ -52,7 +15,7 @@ function StarRating({ rating }) {
         <Star
           key={i}
           className={`w-3.5 h-3.5 ${
-            i < rating
+            i < Math.round(rating || 0)
               ? "fill-yellow-400 text-yellow-400"
               : "fill-gray-200 text-gray-200"
           }`}
@@ -63,6 +26,34 @@ function StarRating({ rating }) {
 }
 
 function BestSellers() {
+  const dispatch = useDispatch()
+  const { toast } = useToast()
+  const { bestSellersList } = useSelector((state) => state.shopProducts)
+  const { user } = useSelector((state) => state.auth)
+
+  useEffect(() => {
+    dispatch(fetchBestSellingProducts())
+  }, [dispatch])
+
+  function handleAddtoCart(productId) {
+    if (!user?.id) {
+      toast({ title: "Please login to add items to cart" })
+      return
+    }
+    dispatch(
+      addToCart({
+        userId: user?.id,
+        productId,
+        quantity: 1,
+      })
+    ).then((data) => {
+      if (data?.payload?.success) {
+        dispatch(fetchCartItems(user?.id))
+        toast({ title: "Added to cart" })
+      }
+    })
+  }
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
@@ -80,15 +71,15 @@ function BestSellers() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {bestSellers.map((product) => (
+          {bestSellersList?.map((product) => (
             <div
-              key={product.id}
+              key={product._id}
               className="group bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
             >
               <div className="relative overflow-hidden">
                 <img
                   src={product.image}
-                  alt={product.name}
+                  alt={product.title}
                   className="w-full h-[200px] sm:h-[280px] object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <Badge className="absolute top-3 left-3 bg-[#6B1E2E] text-white text-xs font-semibold px-3 py-1">
@@ -98,24 +89,32 @@ function BestSellers() {
 
               <div className="p-4">
                 <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-                  {product.category}
+                  {categoryOptionsMap[product.category] || product.category}
                 </p>
                 <h3 className="font-semibold text-gray-900 text-sm leading-snug mb-2 line-clamp-2">
-                  {product.name}
+                  {product.title}
                 </h3>
 
                 <div className="flex items-center gap-2 mb-2">
-                  <StarRating rating={product.rating} />
+                  <StarRating rating={product.averageReview} />
                   <span className="text-xs text-gray-400">
-                    ({product.reviews})
+                    ({product.averageReview || 0})
                   </span>
                 </div>
 
                 <p className="text-lg font-bold text-[#6B1E2E] mb-3">
-                  ₹{product.price.toLocaleString()}
+                  ₹{(product.salePrice || product.price).toLocaleString()}
+                  {product.salePrice && (
+                    <span className="text-sm text-gray-400 line-through ml-2">
+                      ₹{product.price.toLocaleString()}
+                    </span>
+                  )}
                 </p>
 
-                <Button className="w-full bg-[#6B1E2E] hover:bg-[#5a1927] text-white text-sm gap-2 transition-all duration-300">
+                <Button
+                  onClick={() => handleAddtoCart(product._id)}
+                  className="w-full bg-[#6B1E2E] hover:bg-[#5a1927] text-white text-sm gap-2 transition-all duration-300"
+                >
                   <ShoppingCart className="w-4 h-4" />
                   Add to Cart
                 </Button>
