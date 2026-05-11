@@ -1,6 +1,7 @@
 import { Button } from "../ui/button";
 import { Card, CardContent, CardFooter } from "../ui/card";
 import { Badge } from "../ui/badge";
+import { formatPrice } from "@/lib/format-price";
 
 function getDiscountPercent(price, salePrice) {
   if (!salePrice || salePrice <= 0 || !price || price <= 0) return 0;
@@ -13,6 +14,7 @@ function AdminProductTile({
   setOpenCreateProductsDialog,
   setCurrentEditedId,
   handleDelete,
+  deletingId,
 }) {
   const discount = getDiscountPercent(product?.price, product?.salePrice);
 
@@ -36,14 +38,14 @@ function AdminProductTile({
           <div className="flex items-center gap-2 flex-wrap">
             {product?.salePrice > 0 ? (
               <>
-                <span className="text-lg font-bold">${product?.salePrice}</span>
-                <span className="text-sm line-through text-muted-foreground">${product?.price}</span>
+                <span className="text-lg font-bold">{formatPrice(product?.salePrice)}</span>
+                <span className="text-sm line-through text-muted-foreground">{formatPrice(product?.price)}</span>
                 {discount > 0 && (
-                  <span className="text-xs font-medium text-green-600">Save ${(product?.price - product?.salePrice).toFixed(2)}</span>
+                  <span className="text-xs font-medium text-green-600">Save {formatPrice(product?.price - product?.salePrice)}</span>
                 )}
               </>
             ) : (
-              <span className="text-lg font-semibold text-primary">${product?.price}</span>
+              <span className="text-lg font-semibold text-primary">{formatPrice(product?.price)}</span>
             )}
           </div>
         </CardContent>
@@ -59,7 +61,13 @@ function AdminProductTile({
           >
             Edit
           </Button>
-          <Button onClick={() => handleDelete(product?._id)} size="sm" className="flex-1 min-h-[44px] text-xs sm:text-sm">
+          <Button
+            onClick={() => handleDelete(product?._id)}
+            size="sm"
+            className="flex-1 min-h-[44px] text-xs sm:text-sm"
+            loading={deletingId === product?._id}
+            loadingText="Deleting..."
+          >
             Delete
           </Button>
         </CardFooter>

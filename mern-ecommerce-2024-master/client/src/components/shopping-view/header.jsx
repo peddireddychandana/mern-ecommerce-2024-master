@@ -3,7 +3,6 @@ import {
   Link,
   useLocation,
   useNavigate,
-  useSearchParams,
 } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
@@ -23,17 +22,23 @@ import UserCartWrapper from "./cart-wrapper";
 import { useEffect, useState } from "react";
 import { fetchCartItems } from "@/store/shop/cart-slice";
 import { Label } from "../ui/label";
+import toast from "react-hot-toast";
 
-function MenuItems() {
+function MenuItems({ onNavigate }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [active, setActive] = useState("home");
 
   function handleNavigate(menuItem) {
-    setActive(menuItem.id);
     sessionStorage.setItem("filters", JSON.stringify({}));
+    sessionStorage.setItem("activeMenuItem", menuItem.id);
     navigate(menuItem.path);
+    if (onNavigate) onNavigate();
+  }
+
+  function isActive(menuItem) {
+    const saved = sessionStorage.getItem("activeMenuItem");
+    if (saved === menuItem.id) return true;
+    return location.pathname === menuItem.path;
   }
 
   return (
@@ -42,17 +47,18 @@ function MenuItems() {
         <div key={menuItem.id} className="relative">
           <Label
             onClick={() => handleNavigate(menuItem)}
-            className="
+            className={`
               text-sm font-medium cursor-pointer
               transition-all duration-300
               hover:text-[#6B1E2E]
               hover:scale-105
-            "
+              ${isActive(menuItem) ? "text-[#6B1E2E] font-semibold" : ""}
+            `}
           >
             {menuItem.label}
           </Label>
 
-          {active === menuItem.id && (
+          {isActive(menuItem) && (
             <span className="absolute left-0 -bottom-1 w-full h-[2px] bg-[#6B1E2E] rounded-full transition-all duration-300"></span>
           )}
         </div>
@@ -70,6 +76,7 @@ function HeaderRightContent() {
 
   function handleLogout() {
     dispatch(logoutUser());
+    toast.success("Logged out successfully");
   }
 
   useEffect(() => {
@@ -80,18 +87,20 @@ function HeaderRightContent() {
     <div className="flex items-center gap-4">
 
       {/* CART */}
-      <Sheet open={openCartSheet} onOpenChange={() => setOpenCartSheet(false)}>
-        <Button
-          onClick={() => setOpenCartSheet(true)}
-          variant="outline"
-          size="icon"
-          className="relative min-h-[44px] min-w-[44px] transition-all duration-300 hover:scale-105"
-        >
-          <ShoppingCart className="w-6 h-6" />
-          <span className="absolute top-[-5px] right-[2px] text-sm font-bold">
-            {cartItems?.items?.length || 0}
-          </span>
-        </Button>
+      <Sheet open={openCartSheet} onOpenChange={setOpenCartSheet}>
+        <SheetTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            className="relative min-h-[44px] min-w-[44px] transition-all duration-300 hover:scale-105"
+            aria-label={`Shopping cart with ${cartItems?.items?.length || 0} items`}
+          >
+            <ShoppingCart className="w-6 h-6" />
+            <span className="absolute top-[-5px] right-[2px] text-sm font-bold">
+              {cartItems?.items?.length || 0}
+            </span>
+          </Button>
+        </SheetTrigger>
 
         <UserCartWrapper
           setOpenCartSheet={setOpenCartSheet}
@@ -132,6 +141,10 @@ function HeaderRightContent() {
 }
 
 function ShoppingHeader() {
+  const [openMobileSidebar, setOpenMobileSidebar] = useState(false);
+
+  const closeMobileSidebar = () => setOpenMobileSidebar(false);
+
   return (
     <header className="fixed top-0 z-50 w-full bg-white border-b shadow-sm animate-slideDown overflow-hidden">
       <div className="flex h-16 items-center justify-between px-2 sm:px-4 md:px-6 max-w-full">
@@ -140,6 +153,7 @@ function ShoppingHeader() {
         <Link
           to="/shop/home"
           className="flex items-center gap-1 sm:gap-2 shrink-0 transition-all duration-300 hover:opacity-80"
+          onClick={closeMobileSidebar}
         >
           <HousePlug className="h-5 w-5 sm:h-6 sm:w-6 text-[#6B1E2E]" />
           <span className="font-bold tracking-wide text-xs sm:text-sm md:text-base truncate max-w-[130px] sm:max-w-[180px] md:max-w-none">
@@ -156,16 +170,25 @@ function ShoppingHeader() {
         <div className="flex items-center gap-1 sm:gap-2">
           <HeaderRightContent />
 
-          <Sheet>
+          <Sheet open={openMobileSidebar} onOpenChange={setOpenMobileSidebar}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="lg:hidden min-h-[44px] min-w-[44px]">
+              <Button
+                variant="outline"
+                size="icon"
+                className="lg:hidden min-h-[44px] min-w-[44px]"
+                aria-label={openMobileSidebar ? "Close navigation menu" : "Open navigation menu"}
+              >
                 <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
             </SheetTrigger>
 
-            <SheetContent side="left" className="w-[280px] sm:w-[350px] overflow-y-auto">
+            <SheetContent
+              side="left"
+              className="w-[280px] sm:w-[350px] overflow-y-auto"
+              aria-label="Navigation menu"
+            >
               <div className="flex flex-col h-full py-6">
-                <MenuItems />
+                <MenuItems onNavigate={closeMobileSidebar} />
               </div>
             </SheetContent>
           </Sheet>

@@ -37,6 +37,8 @@ function SearchProducts() {
   const [keyword, setKeyword] = useState("");
   const [searched, setSearched] = useState(false);
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+  const [cartLoading, setCartLoading] = useState(false);
+  const [buyLoading, setBuyLoading] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -78,6 +80,8 @@ function SearchProducts() {
   }
 
   function handleAddtoCart(getCurrentProductId, getTotalStock) {
+    if (cartLoading) return;
+    setCartLoading(true);
     console.log(cartItems);
     let getCartItems = cartItems.items || [];
 
@@ -92,13 +96,13 @@ function SearchProducts() {
             title: `Only ${getQuantity} quantity can be added for this item`,
             variant: "destructive",
           });
-
+          setCartLoading(false);
           return;
         }
       }
     }
 
-    dispatch(
+    return dispatch(
       addToCart({
         userId: user?.id,
         productId: getCurrentProductId,
@@ -111,7 +115,7 @@ function SearchProducts() {
           title: "Product is added to cart",
         });
       }
-    });
+    }).finally(() => setCartLoading(false));
   }
 
   function handleGetProductDetails(getCurrentProductId) {
@@ -120,6 +124,8 @@ function SearchProducts() {
   }
 
   function handleBuyNow(getCurrentProductId, getTotalStock) {
+    if (buyLoading) return;
+    setBuyLoading(true);
     let getCartItems = cartItems.items || [];
 
     if (getCartItems.length) {
@@ -133,12 +139,13 @@ function SearchProducts() {
             title: `Only ${getQuantity} quantity can be added for this item`,
             variant: "destructive",
           });
+          setBuyLoading(false);
           return;
         }
       }
     }
 
-    dispatch(
+    return dispatch(
       addToCart({
         userId: user?.id,
         productId: getCurrentProductId,
@@ -149,7 +156,7 @@ function SearchProducts() {
         dispatch(fetchCartItems(user?.id));
         navigate("/shop/checkout");
       }
-    });
+    }).finally(() => setBuyLoading(false));
   }
 
   useEffect(() => {

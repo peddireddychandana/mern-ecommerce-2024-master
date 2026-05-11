@@ -11,7 +11,8 @@ import { useNavigate } from "react-router-dom";
 import { createNewOrder, uploadPaymentScreenshot, confirmUPIPayment } from "@/store/shop/order-slice";
 import { useToast } from "@/components/ui/use-toast";
 import { QRCodeSVG } from "qrcode.react";
-import { UploadCloudIcon, FileIcon, XIcon, Loader2 } from "lucide-react";
+import { UploadCloudIcon, FileIcon, XIcon } from "lucide-react";
+import { formatPrice } from "@/lib/format-price";
 
 function ShoppingCheckout() {
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -73,6 +74,7 @@ function ShoppingCheckout() {
   }
 
   function handlePlaceOrder() {
+    if (isProcessing) return;
     if (!cartItems || !cartItems.items || cartItems.items.length === 0) {
       toast({
         title: "Your cart is empty. Please add items to proceed",
@@ -120,7 +122,6 @@ function ShoppingCheckout() {
     };
 
     dispatch(createNewOrder(orderData)).then((data) => {
-      setIsProcessing(false);
       if (data?.payload?.success) {
         setOrderCreated(true);
         sessionStorage.setItem(
@@ -132,11 +133,11 @@ function ShoppingCheckout() {
         });
       } else {
         toast({
-          title: "Failed to create order. Please try again.",
+          title: data?.payload?.message || "Failed to create order. Please try again.",
           variant: "destructive",
         });
       }
-    });
+    }).finally(() => setIsProcessing(false));
   }
 
   function handleFileChange(event) {
@@ -206,6 +207,7 @@ function ShoppingCheckout() {
   }
 
   async function handleConfirmPayment() {
+    if (isConfirming || isUploading) return;
     setIsConfirming(true);
 
     const storedOrderId = JSON.parse(
@@ -245,12 +247,13 @@ function ShoppingCheckout() {
         throw new Error("Payment confirmation failed");
       }
     } catch (error) {
-      setIsConfirming(false);
-      setIsUploading(false);
       toast({
         title: error?.message || "Payment confirmation failed. Please contact support.",
         variant: "destructive",
       });
+    } finally {
+      setIsConfirming(false);
+      setIsUploading(false);
     }
   }
 
@@ -303,21 +306,21 @@ function ShoppingCheckout() {
               ))
             : null}
 
-          <div className="mt-4 sm:mt-8 space-y-2 sm:space-y-3">
+          <div className="mt-4 space-y-2 sm:space-y-3">
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>Subtotal</span>
-              <span>${(totalCartAmount + totalSavings).toFixed(2)}</span>
+              <span>{formatPrice(totalCartAmount + totalSavings)}</span>
             </div>
             {totalSavings > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-green-600 font-medium">Total Savings</span>
-                <span className="text-green-600 font-medium">-${totalSavings.toFixed(2)}</span>
+                <span className="text-green-600 font-medium">-{formatPrice(totalSavings)}</span>
               </div>
             )}
             <Separator className="my-1" />
             <div className="flex justify-between text-base sm:text-lg">
               <span className="font-bold">Total</span>
-              <span className="font-bold">${totalCartAmount.toFixed(2)}</span>
+              <span className="font-bold">{formatPrice(totalCartAmount)}</span>
             </div>
           </div>
 
@@ -361,9 +364,10 @@ function ShoppingCheckout() {
               <Button
                 onClick={handlePlaceOrder}
                 className="w-full text-sm sm:text-base py-2 sm:py-3"
-                disabled={isProcessing}
+                loading={isProcessing}
+                loadingText="Processing..."
               >
-                {isProcessing ? "Processing..." : "Place Order"}
+                Place Order
               </Button>
             </div>
           )}
@@ -371,7 +375,7 @@ function ShoppingCheckout() {
           {orderCreated && !paymentConfirmed && (
             <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4 p-3 sm:p-4 border rounded-md bg-blue-50">
               <p className="text-xs sm:text-sm font-semibold text-blue-800 text-center">
-                Pay <span className="text-base sm:text-lg">${totalCartAmount}</span> using any UPI app:
+                Pay <span className="text-base sm:text-lg">{formatPrice(totalCartAmount)}</span> using any UPI app:
               </p>
 
               <div className="flex justify-center">
@@ -465,21 +469,11 @@ function ShoppingCheckout() {
               <Button
                 onClick={handleConfirmPayment}
                 className="w-full text-sm sm:text-base py-2 sm:py-3"
-                disabled={!screenshotFile || isConfirming || isUploading}
+                disabled={!screenshotFile}
+                loading={isConfirming || isUploading}
+                loadingText={isUploading ? "Uploading screenshot..." : "Submitting..."}
               >
-                {isUploading ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Uploading screenshot...
-                  </span>
-                ) : isConfirming ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Submitting...
-                  </span>
-                ) : (
-                  "I have paid"
-                )}
+                I have paid
               </Button>
 
               <p className="text-xs text-center text-blue-600">

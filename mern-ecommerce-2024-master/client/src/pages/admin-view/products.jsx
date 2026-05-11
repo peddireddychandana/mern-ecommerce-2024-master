@@ -38,6 +38,8 @@ function AdminProducts() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState("");
   const [imageLoadingState, setImageLoadingState] = useState(false);
   const [currentEditedId, setCurrentEditedId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   const { productList } = useSelector((state) => state.adminProducts);
   const dispatch = useDispatch();
@@ -45,47 +47,45 @@ function AdminProducts() {
 
   function onSubmit(event) {
     event.preventDefault();
+    if (loading) return;
+    setLoading(true);
 
-    currentEditedId !== null
+    const action = currentEditedId !== null
       ? dispatch(
           editProduct({
             id: currentEditedId,
             formData,
           })
-        ).then((data) => {
-          console.log(data, "edit");
-
-          if (data?.payload?.success) {
-            dispatch(fetchAllProducts());
-            setFormData(initialFormData);
-            setOpenCreateProductsDialog(false);
-            setCurrentEditedId(null);
-          }
-        })
+        )
       : dispatch(
           addNewProduct({
             ...formData,
             image: uploadedImageUrl,
           })
-        ).then((data) => {
-          if (data?.payload?.success) {
-            dispatch(fetchAllProducts());
-            setOpenCreateProductsDialog(false);
-            setImageFile(null);
-            setFormData(initialFormData);
-            toast({
-              title: "Product add successfully",
-            });
-          }
+        );
+
+    action.then((data) => {
+      if (data?.payload?.success) {
+        dispatch(fetchAllProducts());
+        setFormData(initialFormData);
+        setOpenCreateProductsDialog(false);
+        setCurrentEditedId(null);
+        setImageFile(null);
+        toast({
+          title: data?.payload?.message || (currentEditedId !== null ? "Product updated successfully" : "Product added successfully"),
         });
+      }
+    }).finally(() => setLoading(false));
   }
 
   function handleDelete(getCurrentProductId) {
+    if (deletingId) return;
+    setDeletingId(getCurrentProductId);
     dispatch(deleteProduct(getCurrentProductId)).then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchAllProducts());
       }
-    });
+    }).finally(() => setDeletingId(null));
   }
 
   function isFormValid() {
@@ -117,6 +117,7 @@ function AdminProducts() {
                 setCurrentEditedId={setCurrentEditedId}
                 product={productItem}
                 handleDelete={handleDelete}
+                deletingId={deletingId}
               />
             ))
           : null}
@@ -152,6 +153,8 @@ function AdminProducts() {
               buttonText={currentEditedId !== null ? "Edit" : "Add"}
               formControls={addProductFormElements}
               isBtnDisabled={!isFormValid()}
+              isLoading={loading}
+              loadingText={currentEditedId !== null ? "Updating..." : "Adding..."}
             />
           </div>
         </SheetContent>

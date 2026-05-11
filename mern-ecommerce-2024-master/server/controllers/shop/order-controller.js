@@ -19,6 +19,18 @@ const createOrder = async (req, res) => {
       cartId,
     } = req.body;
 
+    const recentlyCreated = await Order.findOne({
+      userId,
+      orderDate: { $gte: new Date(Date.now() - 5000) },
+    });
+
+    if (recentlyCreated) {
+      return res.status(429).json({
+        success: false,
+        message: "Please wait a moment before creating another order.",
+      });
+    }
+
     const newlyCreatedOrder = new Order({
       userId,
       cartId,
@@ -35,6 +47,10 @@ const createOrder = async (req, res) => {
     });
 
     await newlyCreatedOrder.save();
+
+    if (cartId) {
+      await Cart.findByIdAndDelete(cartId);
+    }
 
     notifyNewOrder(newlyCreatedOrder);
 

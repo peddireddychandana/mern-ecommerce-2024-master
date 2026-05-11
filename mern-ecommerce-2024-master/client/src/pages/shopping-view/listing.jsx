@@ -1,6 +1,7 @@
-import ProductFilter from "@/components/shopping-view/filter";
 import ProductDetailsDialog from "@/components/shopping-view/product-details";
 import ShoppingProductTile from "@/components/shopping-view/product-tile";
+import FilterSidebar from "@/components/shopping-view/filter-sidebar";
+import FilterChips from "@/components/shopping-view/filter-chips";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,7 +17,7 @@ import {
   fetchAllFilteredProducts,
   fetchProductDetails,
 } from "@/store/shop/products-slice";
-import { ArrowUpDownIcon } from "lucide-react";
+import { ArrowUpDownIcon, SlidersHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -36,6 +37,9 @@ function ShoppingListing() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [cartLoading, setCartLoading] = useState(false);
+  const [buyLoading, setBuyLoading] = useState(false);
   const { toast } = useToast();
 
   const categorySearchParam = searchParams.get("category");
@@ -75,6 +79,8 @@ function ShoppingListing() {
   }
 
   function handleAddtoCart(getCurrentProductId, getTotalStock) {
+    if (cartLoading) return;
+    setCartLoading(true);
     let getCartItems = cartItems.items || [];
 
     if (getCartItems.length) {
@@ -89,12 +95,13 @@ function ShoppingListing() {
             title: `Only ${getQuantity} quantity allowed`,
             variant: "destructive",
           });
+          setCartLoading(false);
           return;
         }
       }
     }
 
-    dispatch(
+    return dispatch(
       addToCart({
         userId: user?.id,
         productId: getCurrentProductId,
@@ -105,10 +112,12 @@ function ShoppingListing() {
         dispatch(fetchCartItems(user?.id));
         toast({ title: "Product added to cart" });
       }
-    });
+    }).finally(() => setCartLoading(false));
   }
 
   function handleBuyNow(getCurrentProductId, getTotalStock) {
+    if (buyLoading) return;
+    setBuyLoading(true);
     let getCartItems = cartItems.items || [];
 
     if (getCartItems.length) {
@@ -123,12 +132,13 @@ function ShoppingListing() {
             title: `Only ${getQuantity} quantity allowed`,
             variant: "destructive",
           });
+          setBuyLoading(false);
           return;
         }
       }
     }
 
-    dispatch(
+    return dispatch(
       addToCart({
         userId: user?.id,
         productId: getCurrentProductId,
@@ -139,7 +149,7 @@ function ShoppingListing() {
         dispatch(fetchCartItems(user?.id));
         navigate("/shop/checkout");
       }
-    });
+    }).finally(() => setBuyLoading(false));
   }
 
   // PAGE LOAD ANIMATION
@@ -206,62 +216,106 @@ function ShoppingListing() {
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 p-4 md:p-6"
-    >
-      {/* FILTER */}
-      <ProductFilter
-        filters={filters}
-        handleFilter={handleFilter}
-      />
+    <div ref={containerRef} className="container mx-auto px-4 py-6">
+      <div className="flex gap-6">
+        {/* FILTER SIDEBAR */}
+        <FilterSidebar
+          filters={filters}
+          handleFilter={handleFilter}
+          isMobileOpen={isMobileSidebarOpen}
+          setIsMobileOpen={setIsMobileSidebarOpen}
+          onClear={() => {
+            setFilters({});
+            sessionStorage.removeItem("filters");
+          }}
+        />
 
-      {/* PRODUCTS */}
-      <div className="bg-background w-full rounded-lg shadow-sm">
-
-        {/* HEADER */}
-        <div className="p-4 border-b flex items-center justify-between">
-          <h2 className="text-lg font-extrabold">All Products</h2>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <ArrowUpDownIcon className="h-4 w-4 mr-2" />
-                Sort
+        {/* PRODUCTS */}
+        <div className="flex-1 min-w-0 bg-white rounded-xl border border-gray-100 shadow-sm">
+          {/* HEADER */}
+          <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex items-center justify-between sm:justify-start gap-3">
+              <h2 className="text-lg font-bold text-gray-900">
+                All Products
+              </h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsMobileSidebarOpen(true)}
+                className="md:hidden flex items-center gap-2"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Filters
               </Button>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent align="end">
-              <DropdownMenuRadioGroup value={sort} onValueChange={handleSort}>
-                {sortOptions.map((s) => (
-                  <DropdownMenuRadioItem key={s.id} value={s.id}>
-                    {s.label}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-          {productList?.map((productItem, i) => (
-            <div
-              key={productItem._id}
-              ref={(el) => (productRefs.current[i] = el)}
-              onMouseEnter={() => handleHover(i, true)}
-              onMouseLeave={() => handleHover(i, false)}
-              className="transition-transform"
-            >
-              <ShoppingProductTile
-                handleGetProductDetails={handleGetProductDetails}
-                product={productItem}
-                handleAddtoCart={handleAddtoCart}
-                handleBuyNow={handleBuyNow}
-              />
             </div>
-          ))}
+            <div className="flex items-center gap-2 sm:ml-auto">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <ArrowUpDownIcon className="h-4 w-4 mr-2" />
+                    Sort
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="end">
+                  <DropdownMenuRadioGroup
+                    value={sort}
+                    onValueChange={handleSort}
+                  >
+                    {sortOptions.map((s) => (
+                      <DropdownMenuRadioItem key={s.id} value={s.id}>
+                        {s.label}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          {/* FILTER CHIPS */}
+          <div className="px-4 pt-3">
+            <FilterChips
+              filters={filters}
+              handleFilter={handleFilter}
+              onClear={() => {
+                setFilters({});
+                sessionStorage.removeItem("filters");
+              }}
+            />
+          </div>
+
+          {/* GRID */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
+            {productList?.map((productItem, i) => (
+              <div
+                key={productItem._id}
+                ref={(el) => (productRefs.current[i] = el)}
+                onMouseEnter={() => handleHover(i, true)}
+                onMouseLeave={() => handleHover(i, false)}
+                className="transition-transform"
+              >
+                <ShoppingProductTile
+                  handleGetProductDetails={handleGetProductDetails}
+                  product={productItem}
+                  handleAddtoCart={handleAddtoCart}
+                  handleBuyNow={handleBuyNow}
+                />
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
+
+      {/* MOBILE STICKY FILTER BUTTON */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 md:hidden">
+        <Button
+          onClick={() => setIsMobileSidebarOpen(true)}
+          className="bg-[#6B1E2E] hover:bg-[#5a1a27] text-white rounded-full shadow-lg h-12 px-6 flex items-center gap-2 transition-transform active:scale-95"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          Filters
+        </Button>
       </div>
 
       {/* DETAILS MODAL */}

@@ -10,12 +10,13 @@ const {
 } = require("../../controllers/shop/order-controller");
 
 const { upload } = require("../../helpers/cloudinary");
+const { rateLimiter } = require("../../middleware/rateLimiter");
 
 const router = express.Router();
 
-router.post("/create", createOrder);
+router.post("/create", rateLimiter, createOrder);
 router.post("/upload-screenshot", upload.single("payment_screenshot"), uploadPaymentScreenshot);
-router.post("/confirm-payment", confirmUPIPayment);
+router.post("/confirm-payment", rateLimiter, confirmUPIPayment);
 router.get("/list/:userId", getAllOrdersByUser);
 router.get("/details/:id", getOrderDetails);
 router.delete("/delete/:id", deleteOrder);

@@ -32,9 +32,22 @@ const addToCart = async (req, res) => {
     );
 
     if (findCurrentProductIndex === -1) {
+      if (quantity > product.totalStock) {
+        return res.status(400).json({
+          success: false,
+          message: `Only ${product.totalStock} items available in stock.`,
+        });
+      }
       cart.items.push({ productId, quantity });
     } else {
-      cart.items[findCurrentProductIndex].quantity += quantity;
+      const newQty = cart.items[findCurrentProductIndex].quantity + quantity;
+      if (newQty > product.totalStock) {
+        return res.status(400).json({
+          success: false,
+          message: `Only ${product.totalStock} items available in stock. You already have ${cart.items[findCurrentProductIndex].quantity} in your cart.`,
+        });
+      }
+      cart.items[findCurrentProductIndex].quantity = newQty;
     }
 
     await cart.save();

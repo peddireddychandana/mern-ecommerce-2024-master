@@ -29,7 +29,6 @@ import {
 
 import { useToast } from "@/components/ui/use-toast";
 import ProductDetailsDialog from "@/components/shopping-view/product-details";
-import { getFeatureImages } from "@/store/common-slice";
 
 import bannerOne from "../../assets/pexels2.jpg";
 import bannerTwo from "../../assets/yellow.jpg";
@@ -69,42 +68,41 @@ function ShoppingHome() {
     (state) => state.shopProducts
   );
 
-  const { featureImageList } = useSelector(
-    (state) => state.commonFeature
-  );
-
   const { user } = useSelector((state) => state.auth);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+  const [cartLoading, setCartLoading] = useState(false);
+  const [buyLoading, setBuyLoading] = useState(false);
 
-  const fallbackImages = [
+  const images = [
     { image: bannerOne },
     { image: bannerTwo },
     { image: bannerThree },
   ];
 
-  const validApiImages =
-    featureImageList?.filter((item) => item.image) || [];
-
-  const images =
-    validApiImages.length > 0 ? validApiImages : fallbackImages;
-
   /* -------------------- AUTO SLIDER -------------------- */
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide((prev) =>
-        prev === images.length - 1 ? 0 : prev + 1
-      );
-    }, 4000);
-
+      setCurrentSlide((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    }, 5000);
     return () => clearInterval(interval);
   }, [images.length]);
 
+  function goToSlide(index) {
+    setCurrentSlide(index);
+  }
+
+  function prevSlide() {
+    setCurrentSlide((p) => (p === 0 ? images.length - 1 : p - 1));
+  }
+
+  function nextSlide() {
+    setCurrentSlide((p) => (p === images.length - 1 ? 0 : p + 1));
+  }
+
   /* -------------------- FETCH DATA -------------------- */
   useEffect(() => {
-    dispatch(getFeatureImages());
-
     dispatch(
       fetchAllFilteredProducts({
         filterParams: {},
@@ -134,7 +132,9 @@ function ShoppingHome() {
   const { cartItems } = useSelector((state) => state.shopCart);
 
   function handleAddtoCart(productId) {
-    dispatch(
+    if (cartLoading) return;
+    setCartLoading(true);
+    return dispatch(
       addToCart({
         userId: user?.id,
         productId,
@@ -145,11 +145,13 @@ function ShoppingHome() {
         dispatch(fetchCartItems(user?.id));
         toast({ title: "Added to cart" });
       }
-    });
+    }).finally(() => setCartLoading(false));
   }
 
   function handleBuyNow(productId) {
-    dispatch(
+    if (buyLoading) return;
+    setBuyLoading(true);
+    return dispatch(
       addToCart({
         userId: user?.id,
         productId,
@@ -160,97 +162,48 @@ function ShoppingHome() {
         dispatch(fetchCartItems(user?.id));
         navigate("/shop/checkout");
       }
-    });
+    }).finally(() => setBuyLoading(false));
   }
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
 
-      {/* ---------------- HERO SECTION ---------------- */}
+      {/* ---------------- HERO CAROUSEL ---------------- */}
       <div className="relative w-full h-[50vh] sm:h-[70vh] lg:h-screen overflow-hidden bg-black">
 
         {images.map((slide, index) => (
-          <motion.div
+          <div
             key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentSlide ? "opacity-100 z-10" : "opacity-0"
+            className={`absolute inset-0 transition-opacity duration-700 ${
+              index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
             }`}
-            animate={{ scale: index === currentSlide ? 1.05 : 1 }}
-            transition={{ duration: 1 }}
           >
             <img
               src={slide.image}
               alt="banner"
               className="w-full h-full object-cover"
             />
-
-            {/* DARK OVERLAY */}
             <div className="absolute inset-0 bg-black/50" />
-
-            {/* HERO CONTENT */}
             <div className="absolute inset-0 flex items-center">
               <div className="max-w-2xl px-6 sm:pl-10 md:pl-20 lg:pl-32 text-white">
-
-                {/* TAGLINE */}
-                <motion.p
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="uppercase tracking-[3px] sm:tracking-[6px] text-xs md:text-sm text-yellow-300 font-light mb-4"
-                >
+                <p className="uppercase tracking-[3px] sm:tracking-[6px] text-xs md:text-sm text-yellow-300 font-light mb-4">
                   Premium Fashion Collection
-                </motion.p>
-
-                {/* TITLE */}
-                <motion.h1
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-extralight leading-[1.05]"
-                >
+                </p>
+                <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-extralight leading-[1.05]">
                   Discover Your
-                  <span className="block text-yellow-400 font-semibold italic">
-                    Perfect Style
-                  </span>
-                </motion.h1>
-
-                {/* LINE */}
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: 96 }}
-                  transition={{ delay: 0.6, duration: 0.8 }}
-                  className="h-[2px] bg-yellow-400 my-6"
-                />
-
-                {/* DESCRIPTION */}
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.7 }}
-                  className="text-gray-200 text-xs sm:text-sm md:text-base max-w-md leading-relaxed mb-8"
-                >
+                  <span className="block text-yellow-400 font-semibold italic">Perfect Style</span>
+                </h1>
+                <div className="h-[2px] bg-yellow-400 my-6 w-24" />
+                <p className="text-gray-200 text-xs sm:text-sm md:text-base max-w-md leading-relaxed mb-8">
                   Curated fashion pieces designed to elevate your everyday look with elegance and confidence.
-                </motion.p>
-
-                {/* BUTTONS */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.9 }}
-                  className="flex gap-4 flex-wrap"
-                >
-
+                </p>
+                <div className="flex gap-4 flex-wrap">
                   <Button
-                    onClick={() =>
-                      productsRef.current?.scrollIntoView({
-                        behavior: "smooth",
-                      })
-                    }
+                    onClick={() => productsRef.current?.scrollIntoView({ behavior: "smooth" })}
                     className="bg-yellow-400 text-black px-6 sm:px-8 py-4 sm:py-6 rounded-full font-medium hover:scale-105 transition text-sm sm:text-base"
                   >
                     Shop Now
                   </Button>
-
                   <Button
                     onClick={() => navigate("/shop/listing")}
                     variant="outline"
@@ -258,36 +211,41 @@ function ShoppingHome() {
                   >
                     Explore
                   </Button>
-
-                </motion.div>
-
+                </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         ))}
 
         {/* ARROWS */}
-        <Button
-          onClick={() =>
-            setCurrentSlide((p) =>
-              p === 0 ? images.length - 1 : p - 1
-            )
-          }
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-30"
+        <button
+          onClick={prevSlide}
+          className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-sm flex items-center justify-center transition-colors"
         >
-          <ChevronLeftIcon />
-        </Button>
+          <ChevronLeftIcon className="w-5 h-5 text-white" />
+        </button>
 
-        <Button
-          onClick={() =>
-            setCurrentSlide((p) =>
-              p === images.length - 1 ? 0 : p + 1
-            )
-          }
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-30"
+        <button
+          onClick={nextSlide}
+          className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-sm flex items-center justify-center transition-colors"
         >
-          <ChevronRightIcon />
-        </Button>
+          <ChevronRightIcon className="w-5 h-5 text-white" />
+        </button>
+
+        {/* DOTS */}
+        <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2 sm:gap-3">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goToSlide(i)}
+              className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
+                i === currentSlide
+                  ? "bg-yellow-400 scale-125"
+                  : "bg-white/50 hover:bg-white/80"
+              }`}
+            />
+          ))}
+        </div>
       </div>
 
       {/* ---------------- CATEGORY ---------------- */}

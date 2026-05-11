@@ -3,6 +3,7 @@ import { Badge } from "../ui/badge";
 import { DialogContent } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
+import { formatPrice } from "@/lib/format-price";
 
 function ShoppingOrderDetailsView({ orderDetails }) {
   const { user } = useSelector((state) => state.auth);
@@ -21,7 +22,7 @@ function ShoppingOrderDetailsView({ orderDetails }) {
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
             <p className="font-medium text-sm sm:text-base">Order Price</p>
-            <Label className="text-sm sm:text-base">${orderDetails?.totalAmount}</Label>
+            <Label className="text-sm sm:text-base">{formatPrice(orderDetails?.totalAmount)}</Label>
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
             <p className="font-medium text-sm sm:text-base">Payment method</p>
@@ -58,7 +59,7 @@ function ShoppingOrderDetailsView({ orderDetails }) {
                     <li className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 p-2 bg-muted/30 rounded-md">
                       <span className="text-sm">Title: {item.title}</span>
                       <span className="text-sm">Quantity: {item.quantity}</span>
-                      <span className="text-sm font-medium">Price: ${item.price}</span>
+                      <span className="text-sm font-medium">Price: {formatPrice(item.price)}</span>
                     </li>
                   ))
                 : null}

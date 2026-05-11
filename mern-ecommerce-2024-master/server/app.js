@@ -9,6 +9,7 @@ require("dotenv").config();
 const authRouter = require("./routes/auth/auth-routes");
 const adminProductsRouter = require("./routes/admin/products-routes");
 const adminOrderRouter = require("./routes/admin/order-routes");
+const adminDashboardRouter = require("./routes/admin/dashboard-routes");
 
 const shopProductsRouter = require("./routes/shop/products-routes");
 const shopCartRouter = require("./routes/shop/cart-routes");
@@ -16,8 +17,6 @@ const shopAddressRouter = require("./routes/shop/address-routes");
 const shopOrderRouter = require("./routes/shop/order-routes");
 const shopSearchRouter = require("./routes/shop/search-routes");
 const shopReviewRouter = require("./routes/shop/review-routes");
-
-const commonFeatureRouter = require("./routes/common/feature-routes");
 
 const app = express();
 
@@ -60,13 +59,13 @@ const mount = (path, router) => {
 mount("/auth", authRouter);
 mount("/admin/products", adminProductsRouter);
 mount("/admin/orders", adminOrderRouter);
+mount("/admin/dashboard", adminDashboardRouter);
 mount("/shop/products", shopProductsRouter);
 mount("/shop/cart", shopCartRouter);
 mount("/shop/address", shopAddressRouter);
 mount("/shop/order", shopOrderRouter);
 mount("/shop/search", shopSearchRouter);
 mount("/shop/review", shopReviewRouter);
-mount("/common/feature", commonFeatureRouter);
 
 const clientBuildPath = path.join(__dirname, "..", "client", "dist");
 if (fs.existsSync(clientBuildPath)) {

@@ -14,12 +14,15 @@ const initialState = {
 
 function AuthRegister() {
   const [formData, setFormData] = useState(initialState);
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   function onSubmit(event) {
     event.preventDefault();
+    if (loading) return;
+    setLoading(true);
     dispatch(registerUser(formData)).then((data) => {
       if (data?.payload?.success) {
         toast({
@@ -32,10 +35,8 @@ function AuthRegister() {
           variant: "destructive",
         });
       }
-    });
+    }).finally(() => setLoading(false));
   }
-
-  console.log(formData);
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center">
@@ -60,6 +61,8 @@ function AuthRegister() {
         formData={formData}
         setFormData={setFormData}
         onSubmit={onSubmit}
+        isLoading={loading}
+        loadingText="Creating account..."
       />
     </div>
     </div>

@@ -13,6 +13,7 @@ import {
 } from "@/store/admin/order-slice";
 import { useToast } from "../ui/use-toast";
 import { CheckCircle, XCircle, ZoomIn, X } from "lucide-react";
+import { formatPrice } from "@/lib/format-price";
 
 const initialFormData = {
   status: "",
@@ -29,6 +30,8 @@ function AdminOrderDetailsView({ orderDetails }) {
   function handleUpdateStatus(event) {
     event.preventDefault();
     const { status } = formData;
+    if (actionLoading) return;
+    setActionLoading(true);
 
     dispatch(
       updateOrderStatus({ id: orderDetails?._id, orderStatus: status })
@@ -41,15 +44,15 @@ function AdminOrderDetailsView({ orderDetails }) {
           title: data?.payload?.message,
         });
       }
-    });
+    }).finally(() => setActionLoading(false));
   }
 
   function handleQuickAction(orderStatus) {
+    if (actionLoading) return;
     setActionLoading(true);
     dispatch(
       updateOrderStatus({ id: orderDetails?._id, orderStatus })
     ).then((data) => {
-      setActionLoading(false);
       if (data?.payload?.success) {
         dispatch(getOrderDetailsForAdmin(orderDetails?._id));
         dispatch(getAllOrdersForAdmin());
@@ -57,7 +60,7 @@ function AdminOrderDetailsView({ orderDetails }) {
           title: data?.payload?.message,
         });
       }
-    });
+    }).finally(() => setActionLoading(false));
   }
 
   return (
@@ -75,7 +78,7 @@ function AdminOrderDetailsView({ orderDetails }) {
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
               <p className="font-medium text-sm sm:text-base">Order Price</p>
-              <Label className="text-sm">${orderDetails?.totalAmount}</Label>
+              <Label className="text-sm">{formatPrice(orderDetails?.totalAmount)}</Label>
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
               <p className="font-medium text-sm sm:text-base">Payment method</p>
@@ -159,7 +162,7 @@ function AdminOrderDetailsView({ orderDetails }) {
                       <li key={idx} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2 border-b border-gray-100 last:border-0 text-sm">
                         <span>Title: {item.title}</span>
                         <span>Quantity: {item.quantity}</span>
-                        <span>Price: ${item.price}</span>
+                        <span>Price: {formatPrice(item.price)}</span>
                       </li>
                     ))
                   : null}
@@ -190,7 +193,8 @@ function AdminOrderDetailsView({ orderDetails }) {
                     variant="default"
                     className="flex-1 bg-green-600 hover:bg-green-700 gap-2"
                     onClick={() => handleQuickAction("confirmed")}
-                    disabled={actionLoading}
+                    loading={actionLoading}
+                    loadingText="Approving..."
                   >
                     <CheckCircle className="h-4 w-4" />
                     Approve Payment
@@ -199,7 +203,8 @@ function AdminOrderDetailsView({ orderDetails }) {
                     variant="destructive"
                     className="flex-1 gap-2"
                     onClick={() => handleQuickAction("rejected")}
-                    disabled={actionLoading}
+                    loading={actionLoading}
+                    loadingText="Rejecting..."
                   >
                     <XCircle className="h-4 w-4" />
                     Reject Payment
@@ -232,6 +237,8 @@ function AdminOrderDetailsView({ orderDetails }) {
               setFormData={setFormData}
               buttonText={"Update Order Status"}
               onSubmit={handleUpdateStatus}
+              isLoading={actionLoading}
+              loadingText="Updating..."
             />
           </div>
         </div>

@@ -3,20 +3,25 @@ import { Button } from "../ui/button";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteCartItem, updateCartQuantity } from "@/store/shop/cart-slice";
 import { useToast } from "../ui/use-toast";
+import { useState } from "react";
+import { formatPrice } from "@/lib/format-price";
 
 function UserCartItemsContent({ cartItem }) {
   const { user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
   const { productList } = useSelector((state) => state.shopProducts);
+  const [loadingQty, setLoadingQty] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const dispatch = useDispatch();
   const { toast } = useToast();
 
   const itemPrice = cartItem?.salePrice > 0 ? cartItem?.salePrice : cartItem?.price;
   const itemSavings = cartItem?.salePrice > 0
-    ? ((cartItem?.price - cartItem?.salePrice) * cartItem?.quantity).toFixed(2)
+    ? (cartItem?.price - cartItem?.salePrice) * cartItem?.quantity
     : 0;
 
   function handleUpdateQuantity(getCartItem, typeOfAction) {
+    if (loadingQty) return;
     if (typeOfAction == "plus") {
       let getCartItems = cartItems.items || [];
 
@@ -46,6 +51,7 @@ function UserCartItemsContent({ cartItem }) {
       }
     }
 
+    setLoadingQty(true);
     dispatch(
       updateCartQuantity({
         userId: user?.id,
@@ -61,10 +67,12 @@ function UserCartItemsContent({ cartItem }) {
           title: "Cart item is updated successfully",
         });
       }
-    });
+    }).finally(() => setLoadingQty(false));
   }
 
   function handleCartItemDelete(getCartItem) {
+    if (deleting) return;
+    setDeleting(true);
     dispatch(
       deleteCartItem({ userId: user?.id, productId: getCartItem?.productId })
     ).then((data) => {
@@ -73,7 +81,7 @@ function UserCartItemsContent({ cartItem }) {
           title: "Cart item is deleted successfully",
         });
       }
-    });
+    }).finally(() => setDeleting(false));
   }
 
   return (
@@ -87,8 +95,8 @@ function UserCartItemsContent({ cartItem }) {
         <h3 className="font-extrabold text-sm sm:text-base truncate">{cartItem?.title}</h3>
         {cartItem?.salePrice > 0 && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <span className="line-through">${cartItem?.price}</span>
-            <span className="text-green-600 font-medium">Save ${((cartItem?.price - cartItem?.salePrice)).toFixed(2)}</span>
+            <span className="line-through">{formatPrice(cartItem?.price)}</span>
+            <span className="text-green-600 font-medium">Save {formatPrice(cartItem?.price - cartItem?.salePrice)}</span>
           </div>
         )}
         <div className="flex items-center gap-2 mt-1.5">
@@ -96,10 +104,10 @@ function UserCartItemsContent({ cartItem }) {
             variant="outline"
             className="size-8 sm:size-9 rounded-full"
             size="icon"
-            disabled={cartItem?.quantity === 1}
+            disabled={cartItem?.quantity === 1 || loadingQty}
             onClick={() => handleUpdateQuantity(cartItem, "minus")}
           >
-            <Minus className="size-4" />
+            {loadingQty ? <span className="size-4" /> : <Minus className="size-4" />}
             <span className="sr-only">Decrease</span>
           </Button>
           <span className="font-semibold min-w-[1.5rem] text-center">{cartItem?.quantity}</span>
@@ -108,22 +116,24 @@ function UserCartItemsContent({ cartItem }) {
             className="size-8 sm:size-9 rounded-full"
             size="icon"
             onClick={() => handleUpdateQuantity(cartItem, "plus")}
+            disabled={loadingQty}
           >
-            <Plus className="size-4" />
+            {loadingQty ? <span className="size-4" /> : <Plus className="size-4" />}
             <span className="sr-only">Increase</span>
           </Button>
         </div>
       </div>
       <div className="flex flex-col items-end shrink-0">
         <p className="font-semibold text-sm sm:text-base whitespace-nowrap">
-          ${(itemPrice * cartItem?.quantity).toFixed(2)}
+          {formatPrice(itemPrice * cartItem?.quantity)}
         </p>
         <button
           onClick={() => handleCartItemDelete(cartItem)}
           className="mt-1.5 p-1.5 hover:bg-destructive/10 rounded-full transition-colors"
           aria-label="Delete item"
+          disabled={deleting}
         >
-          <Trash className="size-4 sm:size-5 text-destructive" />
+          {deleting ? <span className="size-4 sm:size-5 block" /> : <Trash className="size-4 sm:size-5 text-destructive" />}
         </button>
       </div>
     </div>

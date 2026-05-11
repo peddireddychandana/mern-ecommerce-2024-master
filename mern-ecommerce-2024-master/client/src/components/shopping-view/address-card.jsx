@@ -8,6 +8,7 @@ function AddressCard({
   handleEditAddress,
   setCurrentSelectedAddress,
   selectedId,
+  deletingAddressId,
 }) {
   return (
     <Card
@@ -31,7 +32,10 @@ function AddressCard({
       </CardContent>
       <CardFooter className="p-3 flex flex-col sm:flex-row gap-2 sm:justify-between">
         <Button onClick={() => handleEditAddress(addressInfo)} className="w-full sm:w-auto min-h-[2.75rem]">Edit</Button>
-        <Button onClick={() => handleDeleteAddress(addressInfo)} className="w-full sm:w-auto min-h-[2.75rem]">Delete</Button>
+        <Button onClick={() => handleDeleteAddress(addressInfo)} className="w-full sm:w-auto min-h-[2.75rem]"
+          loading={deletingAddressId === addressInfo?._id}
+          loadingText="Deleting..."
+        >Delete</Button>
       </CardFooter>
     </Card>
   );

@@ -1,17 +1,20 @@
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { confirmUPIPayment } from "@/store/shop/order-slice";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 function UpiConfirmationPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const submittedRef = useRef(false);
 
   useEffect(() => {
     const storedOrderId = sessionStorage.getItem("currentOrderId");
 
-    if (storedOrderId) {
+    if (storedOrderId && !submittedRef.current) {
+      submittedRef.current = true;
       const orderId = JSON.parse(storedOrderId);
 
       dispatch(
@@ -32,7 +35,8 @@ function UpiConfirmationPage() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-col items-center gap-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <CardTitle>Submitting Payment for Verification...</CardTitle>
       </CardHeader>
     </Card>

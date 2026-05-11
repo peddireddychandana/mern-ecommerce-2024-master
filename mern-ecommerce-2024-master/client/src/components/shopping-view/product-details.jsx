@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { addReview, getReviews } from "@/store/shop/review-slice";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "../ui/badge";
+import { formatPrice } from "@/lib/format-price";
 
 function getDiscountPercent(price, salePrice) {
   if (!salePrice || salePrice <= 0 || !price || price <= 0) return 0;
@@ -23,6 +24,9 @@ function getDiscountPercent(price, salePrice) {
 function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const [reviewMsg, setReviewMsg] = useState("");
   const [rating, setRating] = useState(0);
+  const [cartLoading, setCartLoading] = useState(false);
+  const [buyLoading, setBuyLoading] = useState(false);
+  const [reviewLoading, setReviewLoading] = useState(false);
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -33,7 +37,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
 
   const discount = getDiscountPercent(productDetails?.price, productDetails?.salePrice);
   const savings = productDetails?.salePrice > 0
-    ? ((productDetails?.price - productDetails?.salePrice) * 1).toFixed(2)
+    ? (productDetails?.price - productDetails?.salePrice)
     : 0;
 
   function handleRatingChange(getRating) {
@@ -43,6 +47,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   }
 
   function handleAddToCart(getCurrentProductId, getTotalStock) {
+    if (cartLoading) return;
     let getCartItems = cartItems.items || [];
 
     if (getCartItems.length) {
@@ -61,6 +66,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         }
       }
     }
+    setCartLoading(true);
     dispatch(
       addToCart({
         userId: user?.id,
@@ -74,10 +80,11 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
           title: "Product is added to cart",
         });
       }
-    });
+    }).finally(() => setCartLoading(false));
   }
 
   function handleBuyNow(getCurrentProductId, getTotalStock) {
+    if (buyLoading) return;
     let getCartItems = cartItems.items || [];
 
     if (getCartItems.length) {
@@ -95,6 +102,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         }
       }
     }
+    setBuyLoading(true);
     dispatch(
       addToCart({
         userId: user?.id,
@@ -107,7 +115,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         handleDialogClose();
         navigate("/shop/checkout");
       }
-    });
+    }).finally(() => setBuyLoading(false));
   }
 
   function handleDialogClose() {
@@ -118,6 +126,8 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   }
 
   function handleAddReview() {
+    if (reviewLoading) return;
+    setReviewLoading(true);
     dispatch(
       addReview({
         productId: productDetails?._id,
@@ -135,7 +145,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
           title: "Review added successfully!",
         });
       }
-    });
+    }).finally(() => setReviewLoading(false));
   }
 
   useEffect(() => {
@@ -170,18 +180,18 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
           <div className="flex items-center gap-3 flex-wrap">
             {productDetails?.salePrice > 0 ? (
               <>
-                <p className="text-3xl font-bold text-primary">${productDetails?.salePrice}</p>
-                <p className="text-xl line-through text-muted-foreground">${productDetails?.price}</p>
+                <p className="text-3xl font-bold text-primary">{formatPrice(productDetails?.salePrice)}</p>
+                <p className="text-xl line-through text-muted-foreground">{formatPrice(productDetails?.price)}</p>
                 {discount > 0 && (
                   <Badge className="bg-green-500 hover:bg-green-600 text-sm">{discount}% OFF</Badge>
                 )}
               </>
             ) : (
-              <p className="text-3xl font-bold text-primary">${productDetails?.price}</p>
+              <p className="text-3xl font-bold text-primary">{formatPrice(productDetails?.price)}</p>
             )}
           </div>
           {savings > 0 && (
-            <p className="text-sm font-medium text-green-600 mt-1">Save ${savings} on this item</p>
+            <p className="text-sm font-medium text-green-600 mt-1">Save {formatPrice(savings)} on this item</p>
           )}
           <div className="flex items-center gap-2 mt-2">
             <div className="flex items-center gap-0.5">
@@ -207,6 +217,8 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                       productDetails?.totalStock
                     )
                   }
+                  loading={cartLoading}
+                  loadingText="Adding..."
                 >
                   Add to Cart
                 </Button>
@@ -218,6 +230,8 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                       productDetails?.totalStock
                     )
                   }
+                  loading={buyLoading}
+                  loadingText="Redirecting..."
                 >
                   Buy now
                 </Button>
@@ -270,6 +284,8 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
               <Button
                 onClick={handleAddReview}
                 disabled={reviewMsg.trim() === ""}
+                loading={reviewLoading}
+                loadingText="Submitting..."
               >
                 Submit
               </Button>

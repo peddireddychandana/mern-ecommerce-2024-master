@@ -20,6 +20,7 @@ import {
 } from "@/store/admin/order-slice";
 import { Badge } from "../ui/badge";
 import { ImageIcon } from "lucide-react";
+import { formatPrice } from "@/lib/format-price";
 
 function getStatusBadge(orderStatus) {
   if (orderStatus === "confirmed") return "bg-green-500";
@@ -30,6 +31,7 @@ function getStatusBadge(orderStatus) {
 
 function AdminOrdersView() {
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const { orderList, orderDetails } = useSelector((state) => state.adminOrder);
   const dispatch = useDispatch();
 
@@ -38,11 +40,13 @@ function AdminOrdersView() {
   }
 
   function handleDeleteOrder(getId) {
+    if (deletingId) return;
+    setDeletingId(getId);
     dispatch(deleteOrder(getId)).then((data) => {
       if (data?.payload?.success) {
         dispatch(getAllOrdersForAdmin());
       }
-    });
+    }).finally(() => setDeletingId(null));
   }
 
   useEffect(() => {
@@ -99,7 +103,7 @@ function AdminOrdersView() {
                         {orderItem?.orderStatus}
                       </Badge>
                     </TableCell>
-                    <TableCell>${orderItem?.totalAmount}</TableCell>
+                    <TableCell>{formatPrice(orderItem?.totalAmount)}</TableCell>
                       <TableCell>
                         <Dialog
                           open={openDetailsDialog}
@@ -126,6 +130,8 @@ function AdminOrdersView() {
                           size="sm"
                           onClick={() => handleDeleteOrder(orderItem?._id)}
                           className="whitespace-nowrap min-h-[44px] text-xs sm:text-sm px-2 sm:px-4"
+                          loading={deletingId === orderItem?._id}
+                          loadingText="Deleting..."
                         >
                           Delete
                         </Button>

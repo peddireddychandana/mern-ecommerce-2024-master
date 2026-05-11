@@ -19,25 +19,29 @@ import {
   deleteOrder,
 } from "@/store/shop/order-slice";
 import { Badge } from "../ui/badge";
+import { formatPrice } from "@/lib/format-price";
 
 function ShoppingOrders() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { orderList, orderDetails } = useSelector((state) => state.shopOrder);
 
-  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   const handleFetchOrderDetails = (id) => {
-    setSelectedOrderId(id);
     dispatch(getOrderDetails(id));
+    setOpenDetailsDialog(true);
   };
 
   const handleDeleteOrder = (id) => {
+    if (deletingId) return;
+    setDeletingId(id);
     dispatch(deleteOrder(id)).then((data) => {
       if (data?.payload?.success) {
         dispatch(getAllOrdersByUserId(user?.id));
       }
-    });
+    }).finally(() => setDeletingId(null));
   };
 
   useEffect(() => {
@@ -94,31 +98,25 @@ function ShoppingOrders() {
                   </TableCell>
 
                   <TableCell className="font-medium">
-                    ${orderItem?.totalAmount}
+                    {formatPrice(orderItem?.totalAmount)}
                   </TableCell>
 
                   <TableCell>
                     <div className="flex gap-2 flex-wrap">
-                      <Dialog>
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            handleFetchOrderDetails(orderItem?._id)
-                          }
-                        >
-                          View
-                        </Button>
-
-                        {selectedOrderId === orderItem?._id && (
-                          <ShoppingOrderDetailsView
-                            orderDetails={orderDetails}
-                          />
-                        )}
-                      </Dialog>
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          handleFetchOrderDetails(orderItem?._id)
+                        }
+                      >
+                        View
+                      </Button>
 
                       <Button
                         variant="destructive"
                         size="sm"
+                        loading={deletingId === orderItem?._id}
+                        loadingText="Deleting..."
                         onClick={() => handleDeleteOrder(orderItem?._id)}
                       >
                         Delete
@@ -168,43 +166,50 @@ function ShoppingOrders() {
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Price</span>
                 <span className="font-medium">
-                  ${orderItem?.totalAmount}
+                  {formatPrice(orderItem?.totalAmount)}
                 </span>
               </div>
 
               {/* Actions */}
               <div className="flex gap-2 pt-2">
-                <Dialog>
-                  <Button
-                    size="sm"
-                    className="flex-1"
-                    onClick={() =>
-                      handleFetchOrderDetails(orderItem?._id)
-                    }
-                  >
-                    View
-                  </Button>
-
-                  {selectedOrderId === orderItem?._id && (
-                    <ShoppingOrderDetailsView
-                      orderDetails={orderDetails}
-                    />
-                  )}
-                </Dialog>
+                <Button
+                  size="sm"
+                  className="flex-1"
+                  onClick={() =>
+                    handleFetchOrderDetails(orderItem?._id)
+                  }
+                >
+                  View
+                </Button>
 
                 <Button
                   variant="destructive"
                   size="sm"
                   className="flex-1"
+                  loading={deletingId === orderItem?._id}
+                  loadingText="Deleting..."
                   onClick={() => handleDeleteOrder(orderItem?._id)}
                 >
                   Delete
                 </Button>
               </div>
+              
             </div>
           ))}
         </div>
       </CardContent>
+
+      <Dialog
+        open={openDetailsDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            setOpenDetailsDialog(false);
+            dispatch(resetOrderDetails());
+          }
+        }}
+      >
+        {orderDetails && <ShoppingOrderDetailsView orderDetails={orderDetails} />}
+      </Dialog>
     </Card>
   );
 }

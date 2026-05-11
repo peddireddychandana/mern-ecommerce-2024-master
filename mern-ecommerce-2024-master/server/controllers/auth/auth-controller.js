@@ -65,19 +65,27 @@ const loginUser = async (req, res) => {
         userName: checkUser.userName,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "60m" }
+      { expiresIn: "7d" }
     );
 
-    res.cookie("token", token, { httpOnly: true, secure: false }).json({
-      success: true,
-      message: "Logged in successfully",
-      user: {
-        email: checkUser.email,
-        role: checkUser.role,
-        id: checkUser._id,
-        userName: checkUser.userName,
-      },
-    });
+    const isProduction = process.env.NODE_ENV === "production";
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .json({
+        success: true,
+        message: "Logged in successfully",
+        user: {
+          email: checkUser.email,
+          role: checkUser.role,
+          id: checkUser._id,
+          userName: checkUser.userName,
+        },
+      });
   } catch (e) {
     console.log(e);
     res.status(500).json({
@@ -90,10 +98,17 @@ const loginUser = async (req, res) => {
 //logout
 
 const logoutUser = (req, res) => {
-  res.clearCookie("token").json({
-    success: true,
-    message: "Logged out successfully!",
-  });
+  const isProduction = process.env.NODE_ENV === "production";
+  res
+    .clearCookie("token", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+    })
+    .json({
+      success: true,
+      message: "Logged out successfully!",
+    });
 };
 
 //auth middleware

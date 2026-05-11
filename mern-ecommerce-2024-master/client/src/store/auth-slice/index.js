@@ -59,19 +59,25 @@ export const logoutUser = createAsyncThunk(
 export const checkAuth = createAsyncThunk(
   "/auth/checkauth",
 
-  async () => {
-    const response = await axios.get(
-      `${API_BASE_URL}/auth/check-auth`,
-      {
-        withCredentials: true,
-        headers: {
-          "Cache-Control":
-            "no-store, no-cache, must-revalidate, proxy-revalidate",
-        },
-      }
-    );
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/auth/check-auth`,
+        {
+          withCredentials: true,
+          headers: {
+            "Cache-Control":
+              "no-store, no-cache, must-revalidate, proxy-revalidate",
+          },
+        }
+      );
 
-    return response.data;
+      return response.data;
+    } catch (err) {
+      const data = err.response?.data;
+      if (data && typeof data === "object") return rejectWithValue({ message: data.message || "Session expired" });
+      return rejectWithValue({ message: "Session expired" });
+    }
   }
 );
 

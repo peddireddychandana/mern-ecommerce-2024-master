@@ -3,6 +3,9 @@ import { Button } from "../ui/button";
 import { categoryOptionsMap } from "@/config";
 import { Badge } from "../ui/badge";
 
+import { useState } from "react";
+import { formatPrice } from "@/lib/format-price";
+
 function getDiscountPercent(price, salePrice) {
   if (!salePrice || salePrice <= 0 || !price || price <= 0) return 0;
   return Math.round(((price - salePrice) / price) * 100);
@@ -14,7 +17,31 @@ function ShoppingProductTile({
   handleAddtoCart,
   handleBuyNow,
 }) {
+  const [cartLoading, setCartLoading] = useState(false);
+  const [buyLoading, setBuyLoading] = useState(false);
   const discount = getDiscountPercent(product?.price, product?.salePrice);
+
+  function onAddToCart() {
+    if (cartLoading) return;
+    setCartLoading(true);
+    const result = handleAddtoCart(product?._id, product?.totalStock);
+    if (result && typeof result.finally === "function") {
+      result.finally(() => setCartLoading(false));
+    } else {
+      setTimeout(() => setCartLoading(false), 2000);
+    }
+  }
+
+  function onBuyNow() {
+    if (buyLoading) return;
+    setBuyLoading(true);
+    const result = handleBuyNow(product?._id, product?.totalStock);
+    if (result && typeof result.finally === "function") {
+      result.finally(() => setBuyLoading(false));
+    } else {
+      setTimeout(() => setBuyLoading(false), 2000);
+    }
+  }
 
   return (
     <Card className="w-full max-w-sm mx-auto">
@@ -47,16 +74,16 @@ function ShoppingProductTile({
             </span>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {product?.salePrice > 0 ? (
+              {product?.salePrice > 0 ? (
               <>
-                <span className="text-sm sm:text-lg font-semibold text-primary">${product?.salePrice}</span>
-                <span className="text-xs sm:text-sm line-through text-muted-foreground">${product?.price}</span>
+                <span className="text-sm sm:text-lg font-semibold text-primary">{formatPrice(product?.salePrice)}</span>
+                <span className="text-xs sm:text-sm line-through text-muted-foreground">{formatPrice(product?.price)}</span>
                 {discount > 0 && (
-                  <span className="text-xs font-medium text-green-600">Save ${(product?.price - product?.salePrice).toFixed(2)}</span>
+                  <span className="text-xs font-medium text-green-600">Save {formatPrice(product?.price - product?.salePrice)}</span>
                 )}
               </>
             ) : (
-              <span className="text-sm sm:text-lg font-semibold text-primary">${product?.price}</span>
+              <span className="text-sm sm:text-lg font-semibold text-primary">{formatPrice(product?.price)}</span>
             )}
           </div>
         </CardContent>
@@ -69,15 +96,19 @@ function ShoppingProductTile({
         ) : (
           <div className="flex gap-2 w-full">
             <Button
-              onClick={() => handleAddtoCart(product?._id, product?.totalStock)}
+              onClick={onAddToCart}
               className="flex-1"
               variant="outline"
+              loading={cartLoading}
+              loadingText="Adding..."
             >
               Add to cart
             </Button>
             <Button
-              onClick={() => handleBuyNow(product?._id, product?.totalStock)}
+              onClick={onBuyNow}
               className="flex-1"
+              loading={buyLoading}
+              loadingText="Processing..."
             >
               Buy now
             </Button>

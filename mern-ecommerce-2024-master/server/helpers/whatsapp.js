@@ -32,7 +32,7 @@ async function notifyNewOrder(order) {
     const customerEmail = user?.email || "Unknown";
 
     const items = order.cartItems
-      .map((i, idx) => `${idx + 1}. ${i.title} x${i.quantity} - $${i.price}`)
+      .map((i, idx) => `${idx + 1}. ${i.title} x${i.quantity} - ₹${i.price}`)
       .join("\n");
 
     const msg = `🛒 NEW ORDER
@@ -47,7 +47,7 @@ Address: ${order.addressInfo?.address || "N/A"}, ${order.addressInfo?.city || "N
 📦 ITEMS
 ${items}
 
-💰 Total: $${order.totalAmount}
+💰 Total: ₹${order.totalAmount}
 💳 Payment: ${order.paymentMethod}
 📋 Status: ${order.orderStatus}`;
 
@@ -63,14 +63,14 @@ async function notifyPaymentVerification(order) {
     const customerName = user?.userName || "Unknown";
 
     const items = order.cartItems
-      .map((i, idx) => `${idx + 1}. ${i.title} x${i.quantity} - $${i.price}`)
+      .map((i, idx) => `${idx + 1}. ${i.title} x${i.quantity} - ₹${i.price}`)
       .join("\n");
 
     const msg = `⚠️ PAYMENT VERIFICATION NEEDED
 Order: #${order._id}
 
 👤 Customer: ${customerName}
-💰 Amount: $${order.totalAmount}
+💰 Amount: ₹${order.totalAmount}
 💳 Method: ${order.paymentMethod}
 🔖 Ref: ${order.paymentId}
 

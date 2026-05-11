@@ -1,12 +1,13 @@
 import { Star, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { fetchBestSellingProducts } from "@/store/shop/products-slice"
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice"
 import { useToast } from "@/components/ui/use-toast"
 import { categoryOptionsMap } from "@/config"
+import { formatPrice } from "@/lib/format-price"
 
 function StarRating({ rating }) {
   return (
@@ -30,16 +31,19 @@ function BestSellers() {
   const { toast } = useToast()
   const { bestSellersList } = useSelector((state) => state.shopProducts)
   const { user } = useSelector((state) => state.auth)
+  const [cartLoading, setCartLoading] = useState(false)
 
   useEffect(() => {
     dispatch(fetchBestSellingProducts())
   }, [dispatch])
 
   function handleAddtoCart(productId) {
+    if (cartLoading) return;
     if (!user?.id) {
       toast({ title: "Please login to add items to cart" })
       return
     }
+    setCartLoading(true);
     dispatch(
       addToCart({
         userId: user?.id,
@@ -51,7 +55,7 @@ function BestSellers() {
         dispatch(fetchCartItems(user?.id))
         toast({ title: "Added to cart" })
       }
-    })
+    }).finally(() => setCartLoading(false));
   }
 
   return (
@@ -103,16 +107,18 @@ function BestSellers() {
                 </div>
 
                 <p className="text-base sm:text-lg font-bold text-[#6B1E2E] mb-3">
-                  ₹{(product.salePrice || product.price).toLocaleString()}
+                  {formatPrice(product.salePrice || product.price)}
                   {product.salePrice && (
                     <span className="text-sm text-gray-400 line-through ml-2">
-                      ₹{product.price.toLocaleString()}
+                      {formatPrice(product.price)}
                     </span>
                   )}
                 </p>
 
                 <Button
                   onClick={() => handleAddtoCart(product._id)}
+                  loading={cartLoading}
+                  loadingText="Adding..."
                   className="w-full bg-[#6B1E2E] hover:bg-[#5a1927] text-white text-xs sm:text-sm gap-2 transition-all duration-300 min-h-[40px] sm:min-h-0"
                 >
                   <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

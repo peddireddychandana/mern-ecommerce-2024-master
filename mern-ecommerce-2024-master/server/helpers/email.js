@@ -90,7 +90,7 @@ async function notifyNewOrder(order) {
     const itemsRows = order.cartItems
       .map(
         (i) =>
-          `<tr><td style="padding:8px;border-bottom:1px solid #eee;">${i.title}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">${i.quantity}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right;">$${i.price}</td></tr>`
+          `<tr><td style="padding:8px;border-bottom:1px solid #eee;">${i.title}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">${i.quantity}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right;">₹${i.price}</td></tr>`
       )
       .join("");
 
@@ -118,7 +118,7 @@ async function notifyNewOrder(order) {
 
           <div style="margin-top:20px;padding:15px;background:#fff;border-radius:5px;">
             <table style="width:100%;">
-              <tr><td style="padding:4px;color:#666;">Total Amount</td><td style="padding:4px;font-weight:bold;font-size:18px;text-align:right;">$${order.totalAmount}</td></tr>
+              <tr><td style="padding:4px;color:#666;">Total Amount</td><td style="padding:4px;font-weight:bold;font-size:18px;text-align:right;">₹${order.totalAmount}</td></tr>
               <tr><td style="padding:4px;color:#666;">Payment Method</td><td style="padding:4px;font-weight:bold;text-align:right;text-transform:capitalize;">${order.paymentMethod}</td></tr>
               <tr><td style="padding:4px;color:#666;">Payment Status</td><td style="padding:4px;font-weight:bold;text-align:right;text-transform:capitalize;">${order.paymentStatus}</td></tr>
               <tr><td style="padding:4px;color:#666;">Order Status</td><td style="padding:4px;font-weight:bold;text-align:right;text-transform:capitalize;">${order.orderStatus}</td></tr>
@@ -131,7 +131,7 @@ async function notifyNewOrder(order) {
 
     await sendEmail({
       to: process.env.ADMIN_EMAIL,
-      subject: `New Order #${order._id} - $${order.totalAmount}`,
+      subject: `New Order #${order._id} - ₹${order.totalAmount}`,
       html,
     });
   } catch (err) {
@@ -146,7 +146,7 @@ async function notifyPaymentVerification(order) {
     const itemsRows = order.cartItems
       .map(
         (i) =>
-          `<tr><td style="padding:8px;border-bottom:1px solid #eee;">${i.title}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">${i.quantity}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right;">$${i.price}</td></tr>`
+          `<tr><td style="padding:8px;border-bottom:1px solid #eee;">${i.title}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">${i.quantity}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right;">₹${i.price}</td></tr>`
       )
       .join("");
 
@@ -169,7 +169,7 @@ async function notifyPaymentVerification(order) {
 
           <div style="margin-top:20px;padding:15px;background:#fff;border-radius:5px;">
             <table style="width:100%;">
-              <tr><td style="padding:4px;color:#666;">Amount</td><td style="padding:4px;font-weight:bold;font-size:18px;text-align:right;">$${order.totalAmount}</td></tr>
+              <tr><td style="padding:4px;color:#666;">Amount</td><td style="padding:4px;font-weight:bold;font-size:18px;text-align:right;">₹${order.totalAmount}</td></tr>
               <tr><td style="padding:4px;color:#666;">Method</td><td style="padding:4px;font-weight:bold;text-align:right;text-transform:capitalize;">${order.paymentMethod}</td></tr>
               <tr><td style="padding:4px;color:#666;">Ref ID</td><td style="padding:4px;font-weight:bold;text-align:right;">${order.paymentId}</td></tr>
             </table>

@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import { Separator } from "../ui/separator";
 import UserCartItemsContent from "./cart-items-content";
+import { formatPrice } from "@/lib/format-price";
 
 function UserCartWrapper({ cartItems, setOpenCartSheet }) {
   const navigate = useNavigate();
@@ -45,18 +46,18 @@ function UserCartWrapper({ cartItems, setOpenCartSheet }) {
       <div className="mt-8 space-y-2">
         <div className="flex justify-between text-sm text-muted-foreground">
           <span>Subtotal</span>
-          <span>${(totalCartAmount + totalSavings).toFixed(2)}</span>
+          <span>{formatPrice(totalCartAmount + totalSavings)}</span>
         </div>
         {totalSavings > 0 && (
           <div className="flex justify-between text-sm">
             <span className="text-green-600 font-medium">Total Savings</span>
-            <span className="text-green-600 font-medium">-${totalSavings.toFixed(2)}</span>
+            <span className="text-green-600 font-medium">-{formatPrice(totalSavings)}</span>
           </div>
         )}
         <Separator className="my-1" />
         <div className="flex justify-between">
           <span className="font-bold">Total</span>
-          <span className="font-bold">${totalCartAmount.toFixed(2)}</span>
+          <span className="font-bold">{formatPrice(totalCartAmount)}</span>
         </div>
       </div>
       <Button

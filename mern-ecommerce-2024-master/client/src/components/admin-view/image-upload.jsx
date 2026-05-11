@@ -47,17 +47,21 @@ function ProductImageUpload({
   }
 
   async function uploadImageToCloudinary() {
+    if (imageLoadingState) return;
     setImageLoadingState(true);
-    const data = new FormData();
-    data.append("my_file", imageFile);
-    const response = await axios.post(
-      `${API_BASE_URL}/admin/products/upload-image`,
-      data
-    );
-    console.log(response, "response");
-
-    if (response?.data?.success) {
-      setUploadedImageUrl(response.data.result.url);
+    try {
+      const data = new FormData();
+      data.append("my_file", imageFile);
+      const response = await axios.post(
+        `${API_BASE_URL}/admin/products/upload-image`,
+        data
+      );
+      if (response?.data?.success) {
+        setUploadedImageUrl(response.data.result.url);
+      }
+    } catch (error) {
+      console.error("Upload failed", error);
+    } finally {
       setImageLoadingState(false);
     }
   }

@@ -31,12 +31,15 @@ function AdminSideBar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => {
+    if (path === "/admin/dashboard") return location.pathname === "/admin/dashboard";
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <>
       {/* MOBILE: horizontal icon nav at top */}
-      <nav className="flex lg:hidden items-center justify-around border-b bg-background px-2 py-1 sticky top-0 z-40">
+      <nav className="flex lg:hidden items-center justify-around border-b bg-background px-2 py-1 sticky top-0 z-40" aria-label="Admin navigation mobile">
         {adminSidebarMenuItems.map((item) => (
           <button
             key={item.id}
@@ -46,6 +49,7 @@ function AdminSideBar() {
                 ? "text-primary bg-muted"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             }`}
+            aria-current={isActive(item.path) ? "page" : undefined}
           >
             {item.icon}
             <span className="text-[10px] leading-tight">{item.label}</span>
@@ -54,10 +58,13 @@ function AdminSideBar() {
       </nav>
 
       {/* DESKTOP: full sidebar */}
-      <aside className="hidden lg:flex w-64 flex-col border-r bg-background p-6">
+      <aside className="hidden lg:flex w-64 flex-col border-r bg-background p-6" aria-label="Admin sidebar">
         <div
           onClick={() => navigate("/admin/dashboard")}
           className="flex cursor-pointer items-center gap-2 mb-8"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === "Enter") navigate("/admin/dashboard"); }}
         >
           <ChartNoAxesCombined size={30} />
           <h1 className="text-2xl font-extrabold">Admin Panel</h1>
@@ -69,9 +76,13 @@ function AdminSideBar() {
               onClick={() => navigate(menuItem.path)}
               className={`flex cursor-pointer text-xl items-center gap-2 rounded-md px-3 min-h-[44px] transition-colors ${
                 isActive(menuItem.path)
-                  ? "bg-muted text-foreground font-semibold"
+                  ? "bg-muted text-foreground font-semibold border-l-4 border-primary"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
+              role="button"
+              tabIndex={0}
+              aria-current={isActive(menuItem.path) ? "page" : undefined}
+              onKeyDown={(e) => { if (e.key === "Enter") navigate(menuItem.path); }}
             >
               {menuItem.icon}
               <span>{menuItem.label}</span>

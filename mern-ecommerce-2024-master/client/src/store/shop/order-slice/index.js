@@ -11,13 +11,18 @@ const initialState = {
 
 export const createNewOrder = createAsyncThunk(
   "/order/createNewOrder",
-  async (orderData) => {
-    const response = await axios.post(
-      `${API_BASE_URL}/shop/order/create`,
-      orderData
-    );
-
-    return response.data;
+  async (orderData, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/shop/order/create`,
+        orderData
+      );
+      return response.data;
+    } catch (err) {
+      const data = err.response?.data;
+      if (data && typeof data === "object") return rejectWithValue({ message: data.message || "Failed to create order" });
+      return rejectWithValue({ message: "Failed to create order" });
+    }
   }
 );
 

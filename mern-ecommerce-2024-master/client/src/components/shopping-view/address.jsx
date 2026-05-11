@@ -23,6 +23,8 @@ const initialAddressFormData = {
 function Address({ setCurrentSelectedAddress, selectedId }) {
   const [formData, setFormData] = useState(initialAddressFormData);
   const [currentEditedId, setCurrentEditedId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [deletingAddressId, setDeletingAddressId] = useState(null);
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { addressList } = useSelector((state) => state.shopAddress);
@@ -30,6 +32,7 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
 
   function handleManageAddress(event) {
     event.preventDefault();
+    if (loading) return;
 
     if (addressList.length >= 3 && currentEditedId === null) {
       setFormData(initialAddressFormData);
@@ -41,40 +44,38 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
       return;
     }
 
-    currentEditedId !== null
+    setLoading(true);
+
+    const action = currentEditedId !== null
       ? dispatch(
           editaAddress({
             userId: user?.id,
             addressId: currentEditedId,
             formData,
           })
-        ).then((data) => {
-          if (data?.payload?.success) {
-            dispatch(fetchAllAddresses(user?.id));
-            setCurrentEditedId(null);
-            setFormData(initialAddressFormData);
-            toast({
-              title: "Address updated successfully",
-            });
-          }
-        })
+        )
       : dispatch(
           addNewAddress({
             ...formData,
             userId: user?.id,
           })
-        ).then((data) => {
-          if (data?.payload?.success) {
-            dispatch(fetchAllAddresses(user?.id));
-            setFormData(initialAddressFormData);
-            toast({
-              title: "Address added successfully",
-            });
-          }
+        );
+
+    action.then((data) => {
+      if (data?.payload?.success) {
+        dispatch(fetchAllAddresses(user?.id));
+        setCurrentEditedId(null);
+        setFormData(initialAddressFormData);
+        toast({
+          title: currentEditedId !== null ? "Address updated successfully" : "Address added successfully",
         });
+      }
+    }).finally(() => setLoading(false));
   }
 
   function handleDeleteAddress(getCurrentAddress) {
+    if (deletingAddressId) return;
+    setDeletingAddressId(getCurrentAddress._id);
     dispatch(
       deleteAddress({ userId: user?.id, addressId: getCurrentAddress._id })
     ).then((data) => {
@@ -84,7 +85,7 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
           title: "Address deleted successfully",
         });
       }
-    });
+    }).finally(() => setDeletingAddressId(null));
   }
 
   function handleEditAddress(getCuurentAddress) {
@@ -122,6 +123,7 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
                 addressInfo={singleAddressItem}
                 handleEditAddress={handleEditAddress}
                 setCurrentSelectedAddress={setCurrentSelectedAddress}
+                deletingAddressId={deletingAddressId}
               />
             ))
           : null}
@@ -139,6 +141,8 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
           buttonText={currentEditedId !== null ? "Edit" : "Add"}
           onSubmit={handleManageAddress}
           isBtnDisabled={!isFormValid()}
+          isLoading={loading}
+          loadingText={currentEditedId !== null ? "Saving..." : "Adding..."}
         />
       </CardContent>
     </Card>
