@@ -96,14 +96,16 @@ const updateOrderStatus = async (req, res) => {
       await Order.findByIdAndUpdate(id, {
         orderStatus,
         paymentStatus: "paid",
+        orderUpdateDate: new Date(),
       });
     } else if (orderStatus === "rejected") {
       await Order.findByIdAndUpdate(id, {
         orderStatus,
         paymentStatus: "unpaid",
+        orderUpdateDate: new Date(),
       });
     } else {
-      await Order.findByIdAndUpdate(id, { orderStatus });
+      await Order.findByIdAndUpdate(id, { orderStatus, orderUpdateDate: new Date() });
     }
 
     res.status(200).json({

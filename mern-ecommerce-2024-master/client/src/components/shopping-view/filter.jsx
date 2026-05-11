@@ -3,30 +3,14 @@ import { Fragment } from "react";
 import { Label } from "../ui/label";
 import { Checkbox } from "../ui/checkbox";
 import { Separator } from "../ui/separator";
-import { X } from "lucide-react";
 
-function ProductFilter({ filters, handleFilter, isMobileOpen, onClose }) {
+function ProductFilter({ filters, handleFilter }) {
   return (
-    <>
-      {isMobileOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={onClose} />
-      )}
-      <div className={`
-        bg-background rounded-lg shadow-sm
-        ${isMobileOpen
-          ? 'fixed left-0 top-0 bottom-0 z-50 w-72 max-w-[85vw] overflow-y-auto md:hidden animate-in slide-in-from-left'
-          : 'hidden md:block'
-        }
-      `}>
-        <div className="p-4 border-b flex items-center justify-between">
-          <h2 className="text-lg font-extrabold">Filters</h2>
-          {onClose && (
-            <button onClick={onClose} className="md:hidden p-1.5 hover:bg-muted rounded-full" aria-label="Close filters">
-              <X className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-      <div className="p-4 space-y-4">
+    <div className="bg-background rounded-lg shadow-sm p-4">
+      <div className="pb-3 border-b mb-4">
+        <h2 className="text-lg font-extrabold">Filters</h2>
+      </div>
+      <div className="space-y-4">
         {Object.keys(filterOptions).map((keyItem) => {
           const options = filterOptions[keyItem];
           const hasParent = options.some((o) => o.parent);
@@ -97,7 +81,7 @@ function ProductFilter({ filters, handleFilter, isMobileOpen, onClose }) {
           );
         })}
       </div>
-    </div></>
+    </div>
   );
 }
 

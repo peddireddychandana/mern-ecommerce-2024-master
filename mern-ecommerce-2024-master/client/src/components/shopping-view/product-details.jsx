@@ -12,6 +12,12 @@ import { Label } from "../ui/label";
 import StarRatingComponent from "../common/star-rating";
 import { useEffect, useState } from "react";
 import { addReview, getReviews } from "@/store/shop/review-slice";
+import { Badge } from "../ui/badge";
+
+function getDiscountPercent(price, salePrice) {
+  if (!salePrice || salePrice <= 0 || !price || price <= 0) return 0;
+  return Math.round(((price - salePrice) / price) * 100);
+}
 
 function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const [reviewMsg, setReviewMsg] = useState("");
@@ -22,6 +28,11 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const { reviews } = useSelector((state) => state.shopReview);
 
   const { toast } = useToast();
+
+  const discount = getDiscountPercent(productDetails?.price, productDetails?.salePrice);
+  const savings = productDetails?.salePrice > 0
+    ? ((productDetails?.price - productDetails?.salePrice) * 1).toFixed(2)
+    : 0;
 
   function handleRatingChange(getRating) {
     console.log(getRating, "getRating");
@@ -121,20 +132,22 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
               {productDetails?.description}
             </p>
           </div>
-          <div className="flex items-center justify-between">
-            <p
-              className={`text-3xl font-bold text-primary ${
-                productDetails?.salePrice > 0 ? "line-through" : ""
-              }`}
-            >
-              ${productDetails?.price}
-            </p>
+          <div className="flex items-center gap-3 flex-wrap">
             {productDetails?.salePrice > 0 ? (
-              <p className="text-2xl font-bold text-muted-foreground">
-                ${productDetails?.salePrice}
-              </p>
-            ) : null}
+              <>
+                <p className="text-3xl font-bold text-primary">${productDetails?.salePrice}</p>
+                <p className="text-xl line-through text-muted-foreground">${productDetails?.price}</p>
+                {discount > 0 && (
+                  <Badge className="bg-green-500 hover:bg-green-600 text-sm">{discount}% OFF</Badge>
+                )}
+              </>
+            ) : (
+              <p className="text-3xl font-bold text-primary">${productDetails?.price}</p>
+            )}
           </div>
+          {savings > 0 && (
+            <p className="text-sm font-medium text-green-600 mt-1">Save ${savings} on this item</p>
+          )}
           <div className="flex items-center gap-2 mt-2">
             <div className="flex items-center gap-0.5">
               <StarRatingComponent rating={averageReview} />

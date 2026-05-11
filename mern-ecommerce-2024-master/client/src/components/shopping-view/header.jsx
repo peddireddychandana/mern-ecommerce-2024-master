@@ -134,44 +134,41 @@ function HeaderRightContent() {
 function ShoppingHeader() {
   return (
     <header className="fixed top-0 z-50 w-full bg-white border-b shadow-sm animate-slideDown overflow-hidden">
-      <div className="flex h-16 items-center justify-between px-4 md:px-6 max-w-full">
+      <div className="flex h-16 items-center justify-between px-2 sm:px-4 md:px-6 max-w-full">
 
         {/* LOGO */}
         <Link
           to="/shop/home"
-          className="flex items-center gap-2 transition-all duration-300 hover:opacity-80"
+          className="flex items-center gap-1 sm:gap-2 shrink-0 transition-all duration-300 hover:opacity-80"
         >
-          <HousePlug className="h-6 w-6 text-[#6B1E2E]" />
-          <span className="font-bold tracking-wide text-sm sm:text-base truncate max-w-[180px] sm:max-w-none">
+          <HousePlug className="h-5 w-5 sm:h-6 sm:w-6 text-[#6B1E2E]" />
+          <span className="font-bold tracking-wide text-xs sm:text-sm md:text-base truncate max-w-[130px] sm:max-w-[180px] md:max-w-none">
             SRI RAMAKRISHNA TEXTILES
           </span>
         </Link>
 
-        {/* MOBILE */}
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="lg:hidden min-h-[44px] min-w-[44px]">
-              <Menu className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
-
-          <SheetContent side="left" className="w-[280px] sm:w-[350px] overflow-y-auto">
-            <div className="flex flex-col h-full py-6">
-              <MenuItems />
-              <div className="mt-8 border-t pt-6">
-                <HeaderRightContent />
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
-
-        {/* DESKTOP */}
+        {/* DESKTOP NAV */}
         <div className="hidden lg:block">
           <MenuItems />
         </div>
 
-        <div className="hidden lg:block">
+        {/* RIGHT: CART + PROFILE + MOBILE MENU */}
+        <div className="flex items-center gap-1 sm:gap-2">
           <HeaderRightContent />
+
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="lg:hidden min-h-[44px] min-w-[44px]">
+                <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
+              </Button>
+            </SheetTrigger>
+
+            <SheetContent side="left" className="w-[280px] sm:w-[350px] overflow-y-auto">
+              <div className="flex flex-col h-full py-6">
+                <MenuItems />
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
 
       </div>

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import UserCartItemsContent from "@/components/shopping-view/cart-items-content";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -47,6 +48,18 @@ function ShoppingCheckout() {
               ? currentItem?.salePrice
               : currentItem?.price) *
               currentItem?.quantity,
+          0
+        )
+      : 0;
+
+  const totalSavings =
+    cartItems && cartItems.items && cartItems.items.length > 0
+      ? cartItems.items.reduce(
+          (sum, currentItem) =>
+            sum +
+            (currentItem?.salePrice > 0
+              ? (currentItem?.price - currentItem?.salePrice) * currentItem?.quantity
+              : 0),
           0
         )
       : 0;
@@ -290,10 +303,21 @@ function ShoppingCheckout() {
               ))
             : null}
 
-          <div className="mt-4 sm:mt-8 space-y-3 sm:space-y-4">
+          <div className="mt-4 sm:mt-8 space-y-2 sm:space-y-3">
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>Subtotal</span>
+              <span>${(totalCartAmount + totalSavings).toFixed(2)}</span>
+            </div>
+            {totalSavings > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-green-600 font-medium">Total Savings</span>
+                <span className="text-green-600 font-medium">-${totalSavings.toFixed(2)}</span>
+              </div>
+            )}
+            <Separator className="my-1" />
             <div className="flex justify-between text-base sm:text-lg">
               <span className="font-bold">Total</span>
-              <span className="font-bold">${totalCartAmount}</span>
+              <span className="font-bold">${totalCartAmount.toFixed(2)}</span>
             </div>
           </div>
 

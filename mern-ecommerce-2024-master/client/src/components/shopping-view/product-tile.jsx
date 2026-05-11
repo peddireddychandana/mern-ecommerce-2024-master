@@ -3,11 +3,18 @@ import { Button } from "../ui/button";
 import { categoryOptionsMap } from "@/config";
 import { Badge } from "../ui/badge";
 
+function getDiscountPercent(price, salePrice) {
+  if (!salePrice || salePrice <= 0 || !price || price <= 0) return 0;
+  return Math.round(((price - salePrice) / price) * 100);
+}
+
 function ShoppingProductTile({
   product,
   handleGetProductDetails,
   handleAddtoCart,
 }) {
+  const discount = getDiscountPercent(product?.price, product?.salePrice);
+
   return (
     <Card className="w-full max-w-sm mx-auto">
       <div onClick={() => handleGetProductDetails(product?._id)}>
@@ -27,7 +34,7 @@ function ShoppingProductTile({
             </Badge>
           ) : product?.salePrice > 0 ? (
             <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600">
-              Sale
+              {discount > 0 ? `${discount}% OFF` : "Sale"}
             </Badge>
           ) : null}
         </div>
@@ -38,19 +45,18 @@ function ShoppingProductTile({
               {categoryOptionsMap[product?.category]}
             </span>
           </div>
-          <div className="flex justify-between items-center mb-2">
-            <span
-              className={`${
-                product?.salePrice > 0 ? "line-through" : ""
-              } text-sm sm:text-lg font-semibold text-primary`}
-            >
-              ${product?.price}
-            </span>
+          <div className="flex items-center gap-2 flex-wrap">
             {product?.salePrice > 0 ? (
-              <span className="text-sm sm:text-lg font-semibold text-primary">
-                ${product?.salePrice}
-              </span>
-            ) : null}
+              <>
+                <span className="text-sm sm:text-lg font-semibold text-primary">${product?.salePrice}</span>
+                <span className="text-xs sm:text-sm line-through text-muted-foreground">${product?.price}</span>
+                {discount > 0 && (
+                  <span className="text-xs font-medium text-green-600">Save ${(product?.price - product?.salePrice).toFixed(2)}</span>
+                )}
+              </>
+            ) : (
+              <span className="text-sm sm:text-lg font-semibold text-primary">${product?.price}</span>
+            )}
           </div>
         </CardContent>
       </div>

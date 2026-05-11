@@ -11,6 +11,11 @@ function UserCartItemsContent({ cartItem }) {
   const dispatch = useDispatch();
   const { toast } = useToast();
 
+  const itemPrice = cartItem?.salePrice > 0 ? cartItem?.salePrice : cartItem?.price;
+  const itemSavings = cartItem?.salePrice > 0
+    ? ((cartItem?.price - cartItem?.salePrice) * cartItem?.quantity).toFixed(2)
+    : 0;
+
   function handleUpdateQuantity(getCartItem, typeOfAction) {
     if (typeOfAction == "plus") {
       let getCartItems = cartItems.items || [];
@@ -80,6 +85,12 @@ function UserCartItemsContent({ cartItem }) {
       />
       <div className="min-w-0 flex-1">
         <h3 className="font-extrabold text-sm sm:text-base truncate">{cartItem?.title}</h3>
+        {cartItem?.salePrice > 0 && (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span className="line-through">${cartItem?.price}</span>
+            <span className="text-green-600 font-medium">Save ${((cartItem?.price - cartItem?.salePrice)).toFixed(2)}</span>
+          </div>
+        )}
         <div className="flex items-center gap-2 mt-1.5">
           <Button
             variant="outline"
@@ -105,11 +116,7 @@ function UserCartItemsContent({ cartItem }) {
       </div>
       <div className="flex flex-col items-end shrink-0">
         <p className="font-semibold text-sm sm:text-base whitespace-nowrap">
-          $
-          {(
-            (cartItem?.salePrice > 0 ? cartItem?.salePrice : cartItem?.price) *
-            cartItem?.quantity
-          ).toFixed(2)}
+          ${(itemPrice * cartItem?.quantity).toFixed(2)}
         </p>
         <button
           onClick={() => handleCartItemDelete(cartItem)}

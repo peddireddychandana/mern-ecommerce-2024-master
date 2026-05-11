@@ -1,5 +1,11 @@
 import { Button } from "../ui/button";
 import { Card, CardContent, CardFooter } from "../ui/card";
+import { Badge } from "../ui/badge";
+
+function getDiscountPercent(price, salePrice) {
+  if (!salePrice || salePrice <= 0 || !price || price <= 0) return 0;
+  return Math.round(((price - salePrice) / price) * 100);
+}
 
 function AdminProductTile({
   product,
@@ -8,6 +14,8 @@ function AdminProductTile({
   setCurrentEditedId,
   handleDelete,
 }) {
+  const discount = getDiscountPercent(product?.price, product?.salePrice);
+
   return (
     <Card className="w-full max-w-sm mx-auto">
       <div>
@@ -17,20 +25,26 @@ function AdminProductTile({
             alt={product?.title}
             className="w-full h-[200px] sm:h-[300px] object-cover rounded-t-lg"
           />
+          {product?.salePrice > 0 && discount > 0 && (
+            <Badge className="absolute top-2 left-2 bg-green-500 hover:bg-green-600">
+              {discount}% OFF
+            </Badge>
+          )}
         </div>
         <CardContent>
           <h2 className="text-lg sm:text-xl font-bold mb-2 mt-2 line-clamp-2">{product?.title}</h2>
-          <div className="flex justify-between items-center mb-2">
-            <span
-              className={`${
-                product?.salePrice > 0 ? "line-through" : ""
-              } text-lg font-semibold text-primary`}
-            >
-              ${product?.price}
-            </span>
+          <div className="flex items-center gap-2 flex-wrap">
             {product?.salePrice > 0 ? (
-              <span className="text-lg font-bold">${product?.salePrice}</span>
-            ) : null}
+              <>
+                <span className="text-lg font-bold">${product?.salePrice}</span>
+                <span className="text-sm line-through text-muted-foreground">${product?.price}</span>
+                {discount > 0 && (
+                  <span className="text-xs font-medium text-green-600">Save ${(product?.price - product?.salePrice).toFixed(2)}</span>
+                )}
+              </>
+            ) : (
+              <span className="text-lg font-semibold text-primary">${product?.price}</span>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex justify-between items-center gap-2">

@@ -63,7 +63,7 @@ function AdminOrdersView() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="hidden sm:table-cell">Order ID</TableHead>
+              <TableHead>Order ID</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Payment</TableHead>
               <TableHead>Status</TableHead>
@@ -80,7 +80,7 @@ function AdminOrdersView() {
             {orderList && orderList.length > 0
               ? orderList.map((orderItem) => (
                   <TableRow key={orderItem?._id}>
-                    <TableCell className="hidden sm:table-cell max-w-[100px] truncate">{orderItem?._id}</TableCell>
+                    <TableCell className="max-w-[80px] sm:max-w-[100px] truncate">{orderItem?._id}</TableCell>
                     <TableCell className="whitespace-nowrap">{orderItem?.orderDate?.split("T")[0]}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">

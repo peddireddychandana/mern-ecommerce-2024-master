@@ -101,6 +101,7 @@ const confirmUPIPayment = async (req, res) => {
     order.paymentStatus = "awaiting_verification";
     order.orderStatus = "awaiting_verification";
     order.paymentId = transactionRef || "UPI-" + Date.now();
+    order.orderUpdateDate = new Date();
     if (screenshotUrl) {
       order.paymentScreenshot = screenshotUrl;
     }
