@@ -90,7 +90,7 @@ const getAllOrdersByUser = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const orders = await Order.find({ userId });
+    const orders = await Order.find({ userId, isVisibleToUser: true });
 
     if (!orders.length) {
       return res.status(404).json({
@@ -142,7 +142,7 @@ const deleteOrder = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const order = await Order.findByIdAndDelete(id);
+    const order = await Order.findByIdAndUpdate(id, { isVisibleToUser: false });
 
     if (!order) {
       return res.status(404).json({
