@@ -270,7 +270,7 @@ function ShoppingCheckout() {
             Your payment is being verified by the admin.
           </p>
           <p className="text-sm font-medium text-amber-600 mb-4">
-            Your payment will be verified within 5-10 minutes.
+            Your payment will be verified soon .
           </p>
           <p className="text-xs text-gray-500 mb-4 sm:mb-6 break-all">
             Order ID: {orderId}

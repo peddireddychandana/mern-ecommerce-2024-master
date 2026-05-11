@@ -19,7 +19,7 @@ import {
 import { ArrowUpDownIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import gsap from "gsap";
 
 function ShoppingListing() {
@@ -34,6 +34,7 @@ function ShoppingListing() {
   const [filters, setFilters] = useState({});
   const [sort, setSort] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const { toast } = useToast();
 
@@ -103,6 +104,40 @@ function ShoppingListing() {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
         toast({ title: "Product added to cart" });
+      }
+    });
+  }
+
+  function handleBuyNow(getCurrentProductId, getTotalStock) {
+    let getCartItems = cartItems.items || [];
+
+    if (getCartItems.length) {
+      const indexOfCurrentItem = getCartItems.findIndex(
+        (item) => item.productId === getCurrentProductId
+      );
+
+      if (indexOfCurrentItem > -1) {
+        const getQuantity = getCartItems[indexOfCurrentItem].quantity;
+        if (getQuantity + 1 > getTotalStock) {
+          toast({
+            title: `Only ${getQuantity} quantity allowed`,
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+    }
+
+    dispatch(
+      addToCart({
+        userId: user?.id,
+        productId: getCurrentProductId,
+        quantity: 1,
+      })
+    ).then((data) => {
+      if (data?.payload?.success) {
+        dispatch(fetchCartItems(user?.id));
+        navigate("/shop/checkout");
       }
     });
   }
@@ -222,6 +257,7 @@ function ShoppingListing() {
                 handleGetProductDetails={handleGetProductDetails}
                 product={productItem}
                 handleAddtoCart={handleAddtoCart}
+                handleBuyNow={handleBuyNow}
               />
             </div>
           ))}

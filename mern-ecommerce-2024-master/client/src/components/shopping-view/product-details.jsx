@@ -12,6 +12,7 @@ import { Label } from "../ui/label";
 import StarRatingComponent from "../common/star-rating";
 import { useEffect, useState } from "react";
 import { addReview, getReviews } from "@/store/shop/review-slice";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "../ui/badge";
 
 function getDiscountPercent(price, salePrice) {
@@ -28,6 +29,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const { reviews } = useSelector((state) => state.shopReview);
 
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const discount = getDiscountPercent(productDetails?.price, productDetails?.salePrice);
   const savings = productDetails?.salePrice > 0
@@ -71,6 +73,39 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         toast({
           title: "Product is added to cart",
         });
+      }
+    });
+  }
+
+  function handleBuyNow(getCurrentProductId, getTotalStock) {
+    let getCartItems = cartItems.items || [];
+
+    if (getCartItems.length) {
+      const indexOfCurrentItem = getCartItems.findIndex(
+        (item) => item.productId === getCurrentProductId
+      );
+      if (indexOfCurrentItem > -1) {
+        const getQuantity = getCartItems[indexOfCurrentItem].quantity;
+        if (getQuantity + 1 > getTotalStock) {
+          toast({
+            title: `Only ${getQuantity} quantity can be added for this item`,
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+    }
+    dispatch(
+      addToCart({
+        userId: user?.id,
+        productId: getCurrentProductId,
+        quantity: 1,
+      })
+    ).then((data) => {
+      if (data?.payload?.success) {
+        dispatch(fetchCartItems(user?.id));
+        handleDialogClose();
+        navigate("/shop/checkout");
       }
     });
   }
@@ -162,17 +197,31 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                 Out of Stock
               </Button>
             ) : (
-              <Button
-                className="w-full"
-                onClick={() =>
-                  handleAddToCart(
-                    productDetails?._id,
-                    productDetails?.totalStock
-                  )
-                }
-              >
-                Add to Cart
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1"
+                  variant="outline"
+                  onClick={() =>
+                    handleAddToCart(
+                      productDetails?._id,
+                      productDetails?.totalStock
+                    )
+                  }
+                >
+                  Add to Cart
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={() =>
+                    handleBuyNow(
+                      productDetails?._id,
+                      productDetails?.totalStock
+                    )
+                  }
+                >
+                  Buy now
+                </Button>
+              </div>
             )}
           </div>
           <Separator />

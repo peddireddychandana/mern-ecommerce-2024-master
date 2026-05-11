@@ -131,6 +131,8 @@ function ShoppingHome() {
     dispatch(fetchProductDetails(id));
   }
 
+  const { cartItems } = useSelector((state) => state.shopCart);
+
   function handleAddtoCart(productId) {
     dispatch(
       addToCart({
@@ -142,6 +144,21 @@ function ShoppingHome() {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
         toast({ title: "Added to cart" });
+      }
+    });
+  }
+
+  function handleBuyNow(productId) {
+    dispatch(
+      addToCart({
+        userId: user?.id,
+        productId,
+        quantity: 1,
+      })
+    ).then((data) => {
+      if (data?.payload?.success) {
+        dispatch(fetchCartItems(user?.id));
+        navigate("/shop/checkout");
       }
     });
   }
@@ -326,6 +343,7 @@ function ShoppingHome() {
                     product={product}
                     handleGetProductDetails={handleGetProductDetails}
                     handleAddtoCart={handleAddtoCart}
+                    handleBuyNow={handleBuyNow}
                   />
                 </motion.div>
               ))}

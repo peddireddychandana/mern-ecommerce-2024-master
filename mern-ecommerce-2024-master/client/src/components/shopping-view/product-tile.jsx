@@ -12,6 +12,7 @@ function ShoppingProductTile({
   product,
   handleGetProductDetails,
   handleAddtoCart,
+  handleBuyNow,
 }) {
   const discount = getDiscountPercent(product?.price, product?.salePrice);
 
@@ -66,12 +67,21 @@ function ShoppingProductTile({
             Out Of Stock
           </Button>
         ) : (
-          <Button
-            onClick={() => handleAddtoCart(product?._id, product?.totalStock)}
-            className="w-full"
-          >
-            Add to cart
-          </Button>
+          <div className="flex gap-2 w-full">
+            <Button
+              onClick={() => handleAddtoCart(product?._id, product?.totalStock)}
+              className="flex-1"
+              variant="outline"
+            >
+              Add to cart
+            </Button>
+            <Button
+              onClick={() => handleBuyNow(product?._id, product?.totalStock)}
+              className="flex-1"
+            >
+              Buy now
+            </Button>
+          </div>
         )}
       </CardFooter>
     </Card>
