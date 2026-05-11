@@ -28,7 +28,6 @@ const OrderSchema = new mongoose.Schema({
   orderUpdateDate: Date,
   paymentId: String,
   payerId: String,
-  isVisibleToUser: { type: Boolean, default: true },
 });
 
 module.exports = mongoose.model("Order", OrderSchema);
