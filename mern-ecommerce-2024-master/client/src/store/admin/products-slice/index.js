@@ -28,7 +28,7 @@ export const fetchAllProducts = createAsyncThunk(
   "/products/fetchAllProducts",
   async () => {
     const result = await axios.get(
-      "${API_BASE_URL}/admin/products/get"
+      `${API_BASE_URL}/admin/products/get`
     );
 
     return result?.data;
