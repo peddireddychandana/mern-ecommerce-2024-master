@@ -1,8 +1,7 @@
-import { Card, CardContent, CardFooter } from "../ui/card";
+import { Heart, ShoppingCart, Eye, Star } from "lucide-react";
 import { Button } from "../ui/button";
-import { categoryOptionsMap } from "@/config";
 import { Badge } from "../ui/badge";
-
+import { categoryOptionsMap } from "@/config";
 import { useState } from "react";
 import { formatPrice } from "@/lib/format-price";
 
@@ -11,111 +10,177 @@ function getDiscountPercent(price, salePrice) {
   return Math.round(((price - salePrice) / price) * 100);
 }
 
-function ShoppingProductTile({
-  product,
-  handleGetProductDetails,
-  handleAddtoCart,
-  handleBuyNow,
-}) {
+function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart, handleBuyNow }) {
   const [cartLoading, setCartLoading] = useState(false);
   const [buyLoading, setBuyLoading] = useState(false);
-  const discount = getDiscountPercent(product?.price, product?.salePrice);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
-  function onAddToCart() {
-    if (cartLoading) return;
+  const discount = getDiscountPercent(product?.price, product?.salePrice);
+  const isOutOfStock = product?.totalStock === 0;
+  const isLowStock = !isOutOfStock && product?.totalStock < 10;
+  const hasSale = product?.salePrice > 0;
+
+  const stockBadge = product?.totalStock > 50 ? (
+    <Badge className="bg-emerald-500 hover:bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 shadow-sm">NEW</Badge>
+  ) : product?.totalStock > 20 ? (
+    <Badge className="bg-amber-500 hover:bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 shadow-sm">BESTSELLER</Badge>
+  ) : null;
+
+  function onAddToCart(e) {
+    e.stopPropagation();
+    if (cartLoading || isOutOfStock) return;
     setCartLoading(true);
-    const result = handleAddtoCart(product?._id, product?.totalStock);
-    if (result && typeof result.finally === "function") {
-      result.finally(() => setCartLoading(false));
-    } else {
-      setTimeout(() => setCartLoading(false), 2000);
-    }
+    const r = handleAddtoCart(product?._id, product?.totalStock);
+    if (r && typeof r.finally === "function") r.finally(() => setCartLoading(false));
+    else setTimeout(() => setCartLoading(false), 2000);
   }
 
-  function onBuyNow() {
-    if (buyLoading) return;
+  function onBuyNow(e) {
+    e.stopPropagation();
+    if (buyLoading || isOutOfStock) return;
     setBuyLoading(true);
-    const result = handleBuyNow(product?._id, product?.totalStock);
-    if (result && typeof result.finally === "function") {
-      result.finally(() => setBuyLoading(false));
-    } else {
-      setTimeout(() => setBuyLoading(false), 2000);
-    }
+    const r = handleBuyNow(product?._id, product?.totalStock);
+    if (r && typeof r.finally === "function") r.finally(() => setBuyLoading(false));
+    else setTimeout(() => setBuyLoading(false), 2000);
+  }
+
+  function onQuickView(e) {
+    e.stopPropagation();
+    handleGetProductDetails(product?._id);
+  }
+
+  function toggleWishlist(e) {
+    e.stopPropagation();
+    setIsWishlisted(!isWishlisted);
   }
 
   return (
-    <Card className="w-full max-w-sm mx-auto">
-      <div onClick={() => handleGetProductDetails(product?._id)}>
-        <div className="relative">
-          <img
-            src={product?.image}
-            alt={product?.title}
-            className="w-full h-[200px] sm:h-[300px] object-cover rounded-t-lg"
-          />
-          {product?.totalStock === 0 ? (
-            <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600">
-              Out Of Stock
+    <div className="group relative bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+      {/* IMAGE */}
+      <div
+        onClick={() => handleGetProductDetails(product?._id)}
+        className="relative overflow-hidden bg-gray-50 cursor-pointer aspect-[3/4]"
+      >
+        {!imgLoaded && <div className="absolute inset-0 bg-gray-100 animate-pulse" />}
+        <img
+          src={product?.image}
+          alt={product?.title}
+          loading="lazy"
+          onLoad={() => setImgLoaded(true)}
+          className={`w-full h-full object-cover transition-all duration-500 ${
+            imgLoaded ? "opacity-100 group-hover:scale-110" : "opacity-0"
+          }`}
+        />
+
+        {/* Wishlist */}
+        <button
+          onClick={toggleWishlist}
+          className={`absolute top-3 right-3 z-10 p-2 rounded-full transition-all duration-200 ${
+            isWishlisted
+              ? "bg-red-50 text-red-500"
+              : "bg-white/80 text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-white"
+          }`}
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <Heart className={`w-4 h-4 ${isWishlisted ? "fill-red-500" : ""}`} />
+        </button>
+
+        {/* Badges */}
+        <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
+          {hasSale && discount > 0 && (
+            <Badge className="bg-red-500 hover:bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 shadow-sm">{discount}% OFF</Badge>
+          )}
+          {stockBadge}
+          {isLowStock && (
+            <Badge className="bg-amber-500 hover:bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 shadow-sm">
+              Only {product?.totalStock} left
             </Badge>
-          ) : product?.totalStock < 10 ? (
-            <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600">
-              {`Only ${product?.totalStock} items left`}
-            </Badge>
-          ) : product?.salePrice > 0 ? (
-            <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600">
-              {discount > 0 ? `${discount}% OFF` : "Sale"}
-            </Badge>
-          ) : null}
+          )}
         </div>
-        <CardContent className="p-3 sm:p-4">
-          <h2 className="text-sm sm:text-lg md:text-xl font-bold mb-2 line-clamp-2">{product?.title}</h2>
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-xs sm:text-sm md:text-[16px] text-muted-foreground">
-              {categoryOptionsMap[product?.category]}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-              {product?.salePrice > 0 ? (
-              <>
-                <span className="text-sm sm:text-lg font-semibold text-primary">{formatPrice(product?.salePrice)}</span>
-                <span className="text-xs sm:text-sm line-through text-muted-foreground">{formatPrice(product?.price)}</span>
-                {discount > 0 && (
-                  <span className="text-xs font-medium text-green-600">Save {formatPrice(product?.price - product?.salePrice)}</span>
-                )}
-              </>
-            ) : (
-              <span className="text-sm sm:text-lg font-semibold text-primary">{formatPrice(product?.price)}</span>
-            )}
-          </div>
-        </CardContent>
-      </div>
-      <CardFooter className="p-3 sm:p-4 pt-0">
-        {product?.totalStock === 0 ? (
-          <Button className="w-full opacity-60 cursor-not-allowed">
-            Out Of Stock
-          </Button>
-        ) : (
-          <div className="flex gap-2 w-full">
-            <Button
-              onClick={onAddToCart}
-              className="flex-1"
-              variant="outline"
-              loading={cartLoading}
-              loadingText="Adding..."
-            >
-              Add to cart
-            </Button>
-            <Button
-              onClick={onBuyNow}
-              className="flex-1"
-              loading={buyLoading}
-              loadingText="Processing..."
-            >
-              Buy now
-            </Button>
+
+        {/* Out of stock overlay */}
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
+            <span className="text-white font-bold text-sm bg-black/60 px-4 py-1.5 rounded-full">Out of Stock</span>
           </div>
         )}
-      </CardFooter>
-    </Card>
+
+        {/* Quick View on hover */}
+        <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+          <button
+            onClick={onQuickView}
+            className="w-full flex items-center justify-center gap-2 bg-white/90 backdrop-blur-sm text-gray-800 text-xs font-medium py-2.5 rounded-lg hover:bg-white transition-colors"
+          >
+            <Eye className="w-4 h-4" /> Quick View
+          </button>
+        </div>
+      </div>
+
+      {/* PRODUCT INFO */}
+      <div className="p-3 sm:p-4">
+        <p className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider mb-1">
+          {categoryOptionsMap[product?.category] || product?.category || "General"}
+        </p>
+
+        <h3
+          onClick={() => handleGetProductDetails(product?._id)}
+          className="font-semibold text-gray-900 text-xs sm:text-sm leading-snug mb-1.5 line-clamp-2 cursor-pointer hover:text-[#6B1E2E] transition-colors"
+        >
+          {product?.title}
+        </h3>
+
+        {/* Star rating */}
+        <div className="flex items-center gap-1 mb-2">
+          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+          <span className="text-xs font-semibold text-gray-700">
+            {(product?.averageReview || 0).toFixed(1)}
+          </span>
+        </div>
+
+        {/* Price */}
+        <div className="flex items-baseline gap-2 flex-wrap mb-3">
+          <span className="text-sm sm:text-base font-bold text-[#6B1E2E]">
+            {formatPrice(product?.salePrice > 0 ? product?.salePrice : product?.price)}
+          </span>
+          {hasSale && (
+            <>
+              <span className="text-xs sm:text-sm text-gray-400 line-through">{formatPrice(product?.price)}</span>
+              {discount > 0 && (
+                <span className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">{discount}% OFF</span>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2">
+          {isOutOfStock ? (
+            <Button disabled className="w-full text-xs sm:text-sm opacity-60 cursor-not-allowed" variant="outline">Out of Stock</Button>
+          ) : (
+            <>
+              <Button
+                onClick={onAddToCart}
+                variant="outline"
+                className="flex-1 h-9 text-xs sm:text-sm gap-1.5 px-2"
+                loading={cartLoading}
+                loadingText=""
+              >
+                <ShoppingCart className="w-3.5 h-3.5 shrink-0" /> <span className="hidden sm:inline">Cart</span>
+              </Button>
+              <Button
+                onClick={onBuyNow}
+                className="flex-1 h-9 text-xs sm:text-sm bg-[#6B1E2E] hover:bg-[#5a1928] px-2"
+                loading={buyLoading}
+                loadingText=""
+              >
+                Buy Now
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 

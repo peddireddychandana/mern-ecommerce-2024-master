@@ -1,20 +1,30 @@
-import { StarIcon } from "lucide-react";
+import { StarIcon, ChevronLeft, ChevronRight, Heart, Camera, Upload } from "lucide-react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent } from "../ui/dialog";
 import { Separator } from "../ui/separator";
 import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { useToast } from "../ui/use-toast";
 import { setProductDetails } from "@/store/shop/products-slice";
 import { Label } from "../ui/label";
 import StarRatingComponent from "../common/star-rating";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { addReview, getReviews } from "@/store/shop/review-slice";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "../ui/badge";
 import { formatPrice } from "@/lib/format-price";
+
+const SIZE_OPTIONS = ["S", "M", "L", "XL"];
+const COLOR_OPTIONS = [
+  { name: "Red", hex: "#DC2626" },
+  { name: "Blue", hex: "#2563EB" },
+  { name: "Black", hex: "#1F2937" },
+  { name: "White", hex: "#F9FAFB", border: true },
+  { name: "Green", hex: "#16A34A" },
+];
 
 function getDiscountPercent(price, salePrice) {
   if (!salePrice || salePrice <= 0 || !price || price <= 0) return 0;
@@ -27,6 +37,13 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const [cartLoading, setCartLoading] = useState(false);
   const [buyLoading, setBuyLoading] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [activeImg, setActiveImg] = useState(0);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [communityPhotos, setCommunityPhotos] = useState([]);
+  const [communityComment, setCommunityComment] = useState("");
+  const fileInputRef = useRef(null);
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -40,9 +57,13 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
     ? (productDetails?.price - productDetails?.salePrice)
     : 0;
 
-  function handleRatingChange(getRating) {
-    console.log(getRating, "getRating");
+  const imageViews = [
+    { url: productDetails?.image, label: "Front" },
+    { url: productDetails?.image, label: "Side", filter: "brightness(0.95) contrast(1.05)" },
+    { url: productDetails?.image, label: "Back", filter: "brightness(0.9) saturate(0.9)" },
+  ];
 
+  function handleRatingChange(getRating) {
     setRating(getRating);
   }
 
@@ -61,7 +82,6 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
             title: `Only ${getQuantity} quantity can be added for this item`,
             variant: "destructive",
           });
-
           return;
         }
       }
@@ -76,9 +96,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
     ).then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
-        toast({
-          title: "Product is added to cart",
-        });
+        toast({ title: "Product is added to cart" });
       }
     }).finally(() => setCartLoading(false));
   }
@@ -123,6 +141,10 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
     dispatch(setProductDetails());
     setRating(0);
     setReviewMsg("");
+    setSelectedSize(null);
+    setSelectedColor(null);
+    setActiveImg(0);
+    setCommunityComment("");
   }
 
   function handleAddReview() {
@@ -141,18 +163,27 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         setRating(0);
         setReviewMsg("");
         dispatch(getReviews(productDetails?._id));
-        toast({
-          title: "Review added successfully!",
-        });
+        toast({ title: "Review added successfully!" });
       }
     }).finally(() => setReviewLoading(false));
+  }
+
+  function handleCommunityPhotoUpload(e) {
+    const files = Array.from(e.target.files);
+    const newPhotos = files.map((file) => URL.createObjectURL(file));
+    setCommunityPhotos((prev) => [...prev, ...newPhotos].slice(0, 4));
+  }
+
+  function handleCommunitySubmit() {
+    if (!communityComment.trim() && communityPhotos.length === 0) return;
+    toast({ title: "Thanks for sharing with the community!" });
+    setCommunityComment("");
+    setCommunityPhotos([]);
   }
 
   useEffect(() => {
     if (productDetails !== null) dispatch(getReviews(productDetails?._id));
   }, [productDetails]);
-
-  console.log(reviews, "reviews");
 
   const averageReview =
     reviews && reviews.length > 0
@@ -163,60 +194,153 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 p-4 sm:p-8 max-w-[95vw] sm:max-w-[90vw] lg:max-w-[75vw] overflow-y-auto max-h-[90vh]">
-        <div className="relative overflow-hidden rounded-lg">
-          <img
-            src={productDetails?.image}
-            alt={productDetails?.title}
-            className="aspect-square w-full object-cover"
-          />
+        {/* LEFT COLUMN — Image Gallery */}
+        <div>
+          <div className="relative overflow-hidden rounded-lg bg-gray-50 aspect-[3/4] sm:aspect-square mb-3">
+            <img
+              src={imageViews[activeImg]?.url}
+              alt={`${productDetails?.title} - ${imageViews[activeImg]?.label}`}
+              style={{ filter: imageViews[activeImg]?.filter || "none" }}
+              className="w-full h-full object-cover transition-all duration-300"
+            />
+            {imageViews.length > 1 && (
+              <>
+                <button
+                  onClick={() => setActiveImg((p) => (p > 0 ? p - 1 : imageViews.length - 1))}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center hover:bg-white shadow-sm"
+                >
+                  <ChevronLeft className="w-5 h-5 text-gray-700" />
+                </button>
+                <button
+                  onClick={() => setActiveImg((p) => (p < imageViews.length - 1 ? p + 1 : 0))}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 flex items-center justify-center hover:bg-white shadow-sm"
+                >
+                  <ChevronRight className="w-5 h-5 text-gray-700" />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Thumbnails */}
+          <div className="flex gap-2 mb-4">
+            {imageViews.map((img, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveImg(i)}
+                className={`w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
+                  activeImg === i ? "border-[#6B1E2E] ring-1 ring-[#6B1E2E]/30" : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <img
+                  src={img.url}
+                  alt={img.label}
+                  className="w-full h-full object-cover"
+                  style={{ filter: img.filter || "none" }}
+                />
+              </button>
+            ))}
+            {selectedColor !== null && (
+              <div className="ml-auto flex items-center">
+                <span className="w-6 h-6 rounded-full border border-gray-300" style={{ backgroundColor: COLOR_OPTIONS[selectedColor]?.hex }} />
+              </div>
+            )}
+          </div>
+
+          {/* Size selector */}
+          <div className="mb-4">
+            <p className="text-xs text-gray-500 font-medium mb-2">Select Size</p>
+            <div className="flex gap-2 flex-wrap">
+              {SIZE_OPTIONS.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSelectedSize(s === selectedSize ? null : s)}
+                  className={`w-10 h-10 rounded-lg text-sm font-semibold transition-all border ${
+                    selectedSize === s
+                      ? "bg-[#6B1E2E] text-white border-[#6B1E2E] shadow-sm"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-[#6B1E2E] hover:text-[#6B1E2E]"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Color selector */}
+          <div>
+            <p className="text-xs text-gray-500 font-medium mb-2">Select Color</p>
+            <div className="flex gap-2 flex-wrap">
+              {COLOR_OPTIONS.map((c, i) => (
+                <button
+                  key={c.name}
+                  onClick={() => setSelectedColor(i === selectedColor ? null : i)}
+                  className={`w-7 h-7 rounded-full transition-all border-2 ${
+                    selectedColor === i ? "border-[#6B1E2E] scale-110 shadow-sm ring-2 ring-[#6B1E2E]/30" : c.border ? "border-gray-300" : "border-transparent"
+                  }`}
+                  style={{ backgroundColor: c.hex }}
+                  title={c.name}
+                />
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="">
+
+        {/* RIGHT COLUMN — Product Info + Reviews */}
+        <div>
           <div>
             <h1 className="text-xl sm:text-3xl font-extrabold">{productDetails?.title}</h1>
-            <p className="text-muted-foreground text-2xl mb-5 mt-4">
-              {productDetails?.description}
-            </p>
+            <p className="text-muted-foreground text-base sm:text-lg mt-2 sm:mt-4">{productDetails?.description}</p>
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
+
+          <div className="flex items-center gap-3 flex-wrap mt-4">
             {productDetails?.salePrice > 0 ? (
               <>
-                <p className="text-3xl font-bold text-primary">{formatPrice(productDetails?.salePrice)}</p>
-                <p className="text-xl line-through text-muted-foreground">{formatPrice(productDetails?.price)}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-[#6B1E2E]">{formatPrice(productDetails?.salePrice)}</p>
+                <p className="text-lg sm:text-xl line-through text-muted-foreground">{formatPrice(productDetails?.price)}</p>
                 {discount > 0 && (
-                  <Badge className="bg-green-500 hover:bg-green-600 text-sm">{discount}% OFF</Badge>
+                  <Badge className="bg-green-500 hover:bg-green-600 text-xs sm:text-sm">{discount}% OFF</Badge>
                 )}
               </>
             ) : (
-              <p className="text-3xl font-bold text-primary">{formatPrice(productDetails?.price)}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-[#6B1E2E]">{formatPrice(productDetails?.price)}</p>
             )}
           </div>
           {savings > 0 && (
             <p className="text-sm font-medium text-green-600 mt-1">Save {formatPrice(savings)} on this item</p>
           )}
+
           <div className="flex items-center gap-2 mt-2">
             <div className="flex items-center gap-0.5">
               <StarRatingComponent rating={averageReview} />
             </div>
-            <span className="text-muted-foreground">
-              ({averageReview.toFixed(2)})
-            </span>
+            <span className="text-muted-foreground text-sm">({averageReview.toFixed(2)})</span>
+            {reviews?.length > 0 && (
+              <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" /> Verified
+              </span>
+            )}
           </div>
-          <div className="mt-5 mb-5">
+
+          {/* Wishlist button */}
+          <button
+            onClick={() => setIsWishlisted(!isWishlisted)}
+            className={`mt-3 flex items-center gap-2 text-sm transition-colors ${
+              isWishlisted ? "text-red-500" : "text-gray-500 hover:text-red-400"
+            }`}
+          >
+            <Heart className={`w-4 h-4 ${isWishlisted ? "fill-red-500" : ""}`} />
+            {isWishlisted ? "Added to Wishlist" : "Add to Wishlist"}
+          </button>
+
+          <div className="mt-4 sm:mt-5 mb-4 sm:mb-5">
             {productDetails?.totalStock === 0 ? (
-              <Button className="w-full opacity-60 cursor-not-allowed">
-                Out of Stock
-              </Button>
+              <Button className="w-full opacity-60 cursor-not-allowed">Out of Stock</Button>
             ) : (
               <div className="flex gap-2">
                 <Button
                   className="flex-1"
                   variant="outline"
-                  onClick={() =>
-                    handleAddToCart(
-                      productDetails?._id,
-                      productDetails?.totalStock
-                    )
-                  }
+                  onClick={() => handleAddToCart(productDetails?._id, productDetails?.totalStock)}
                   loading={cartLoading}
                   loadingText="Adding..."
                 >
@@ -224,12 +348,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                 </Button>
                 <Button
                   className="flex-1"
-                  onClick={() =>
-                    handleBuyNow(
-                      productDetails?._id,
-                      productDetails?.totalStock
-                    )
-                  }
+                  onClick={() => handleBuyNow(productDetails?._id, productDetails?.totalStock)}
                   loading={buyLoading}
                   loadingText="Redirecting..."
                 >
@@ -238,48 +357,48 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
               </div>
             )}
           </div>
+
           <Separator />
-          <div className="max-h-[300px] overflow-auto">
-            <h2 className="text-xl font-bold mb-4">Reviews</h2>
+
+          {/* Reviews */}
+          <div className="max-h-[300px] overflow-auto mt-4">
+            <h2 className="text-lg font-bold mb-4">Reviews</h2>
             <div className="grid gap-6">
               {reviews && reviews.length > 0 ? (
                 reviews.map((reviewItem) => (
-                  <div className="flex gap-4">
+                  <div className="flex gap-4" key={reviewItem._id}>
                     <Avatar className="w-10 h-10 border">
-                      <AvatarFallback>
-                        {reviewItem?.userName[0].toUpperCase()}
-                      </AvatarFallback>
+                      <AvatarFallback>{reviewItem?.userName[0].toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="grid gap-1">
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold">{reviewItem?.userName}</h3>
+                        <span className="text-[10px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full">Verified Purchase</span>
                       </div>
                       <div className="flex items-center gap-0.5">
                         <StarRatingComponent rating={reviewItem?.reviewValue} />
                       </div>
-                      <p className="text-muted-foreground">
-                        {reviewItem.reviewMessage}
-                      </p>
+                      <p className="text-muted-foreground">{reviewItem.reviewMessage}</p>
                     </div>
                   </div>
                 ))
               ) : (
-                <h1>No Reviews</h1>
+                <h1 className="text-sm text-gray-400">No Reviews</h1>
               )}
             </div>
-            <div className="mt-10 flex-col flex gap-2">
-              <Label>Write a review</Label>
+
+            {/* Write review */}
+            <div className="mt-6 flex-col flex gap-2 border rounded-lg p-4 bg-gray-50">
+              <Label className="font-semibold">Write a review</Label>
               <div className="flex gap-1">
-                <StarRatingComponent
-                  rating={rating}
-                  handleRatingChange={handleRatingChange}
-                />
+                <StarRatingComponent rating={rating} handleRatingChange={handleRatingChange} />
               </div>
-              <Input
+              <Textarea
                 name="reviewMsg"
                 value={reviewMsg}
                 onChange={(event) => setReviewMsg(event.target.value)}
                 placeholder="Write a review..."
+                className="min-h-[80px]"
               />
               <Button
                 onClick={handleAddReview}
@@ -288,6 +407,58 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                 loadingText="Submitting..."
               >
                 Submit
+              </Button>
+            </div>
+          </div>
+
+          {/* Community Section */}
+          <Separator className="my-4" />
+          <div>
+            <h3 className="text-base font-bold mb-2 flex items-center gap-2">
+              <Camera className="w-4 h-4" /> Community
+            </h3>
+
+            {/* Uploaded photos preview */}
+            {communityPhotos.length > 0 && (
+              <div className="flex gap-2 mb-3 flex-wrap">
+                {communityPhotos.map((photo, i) => (
+                  <div key={i} className="w-16 h-16 rounded-lg overflow-hidden border">
+                    <img src={photo} alt={`Community ${i}`} className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                ref={fileInputRef}
+                onChange={handleCommunityPhotoUpload}
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                className="gap-1.5 text-xs"
+              >
+                <Upload className="w-3.5 h-3.5" /> Photo
+              </Button>
+              <Input
+                value={communityComment}
+                onChange={(e) => setCommunityComment(e.target.value)}
+                placeholder="Add a comment..."
+                className="flex-1 h-9 text-sm"
+              />
+              <Button
+                size="sm"
+                onClick={handleCommunitySubmit}
+                disabled={!communityComment.trim() && communityPhotos.length === 0}
+                className="bg-[#6B1E2E] hover:bg-[#5a1928] text-xs"
+              >
+                Share
               </Button>
             </div>
           </div>
