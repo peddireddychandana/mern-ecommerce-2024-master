@@ -1,4 +1,4 @@
-import { HousePlug, LogOut, Menu, ShoppingCart, UserCog, Search } from "lucide-react";
+import { HousePlug, LogOut, Menu, ShoppingCart, UserCog } from "lucide-react";
 import {
   Link,
   useLocation,
@@ -142,22 +142,12 @@ function HeaderRightContent() {
 
 function ShoppingHeader() {
   const [openMobileSidebar, setOpenMobileSidebar] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const navigate = useNavigate();
 
   const closeMobileSidebar = () => setOpenMobileSidebar(false);
 
-  function handleSearch(e) {
-    e.preventDefault();
-    const trimmed = searchQuery.trim();
-    if (trimmed) {
-      navigate(`/shop/search?keyword=${encodeURIComponent(trimmed)}`);
-    }
-  }
-
   return (
     <header className="fixed top-0 z-50 w-full bg-white border-b shadow-sm animate-slideDown overflow-hidden">
-      <div className="flex h-16 items-center gap-2 sm:gap-4 px-2 sm:px-4 md:px-6 max-w-full">
+      <div className="flex h-16 items-center justify-between px-2 sm:px-4 md:px-6 max-w-full">
 
         {/* LOGO */}
         <Link
@@ -166,24 +156,10 @@ function ShoppingHeader() {
           onClick={closeMobileSidebar}
         >
           <HousePlug className="h-5 w-5 sm:h-6 sm:w-6 text-[#6B1E2E]" />
-          <span className="font-bold tracking-wide text-xs sm:text-sm md:text-base truncate max-w-[100px] sm:max-w-[150px] md:max-w-none">
+          <span className="font-bold tracking-wide text-xs sm:text-sm md:text-base truncate max-w-[130px] sm:max-w-[180px] md:max-w-none">
             SRI RAMAKRISHNA TEXTILES
           </span>
         </Link>
-
-        {/* SEARCH BAR */}
-        <form onSubmit={handleSearch} className="flex-1 max-w-md hidden sm:block">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search products..."
-              className="w-full h-9 pl-9 pr-3 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-[#6B1E2E] focus:bg-white transition-colors"
-            />
-          </div>
-        </form>
 
         {/* DESKTOP NAV */}
         <div className="hidden lg:block">
@@ -192,15 +168,6 @@ function ShoppingHeader() {
 
         {/* RIGHT: CART + PROFILE + MOBILE MENU */}
         <div className="flex items-center gap-1 sm:gap-2">
-          {/* Mobile search icon */}
-          <button
-            onClick={() => navigate("/shop/search")}
-            className="sm:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            aria-label="Search"
-          >
-            <Search className="w-5 h-5 text-gray-600" />
-          </button>
-
           <HeaderRightContent />
 
           <Sheet open={openMobileSidebar} onOpenChange={setOpenMobileSidebar}>

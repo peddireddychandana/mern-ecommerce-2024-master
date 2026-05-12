@@ -56,11 +56,6 @@ function SearchProducts() {
     )
   }, [dispatch])
 
-  useEffect(() => {
-    const kw = searchParams.get("keyword");
-    if (kw) setKeyword(kw);
-  }, [])
-
   const { productList } = useSelector((state) => state.shopProducts)
   const displayProducts = !searched ? (productList?.length ? productList : defaultProducts) : searchResults
 
