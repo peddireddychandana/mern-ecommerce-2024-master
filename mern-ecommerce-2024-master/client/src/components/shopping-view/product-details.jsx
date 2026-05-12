@@ -1,4 +1,4 @@
-import { StarIcon, ChevronLeft, ChevronRight, Heart, Camera, Upload } from "lucide-react";
+import { StarIcon, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent } from "../ui/dialog";
@@ -11,7 +11,7 @@ import { useToast } from "../ui/use-toast";
 import { setProductDetails } from "@/store/shop/products-slice";
 import { Label } from "../ui/label";
 import StarRatingComponent from "../common/star-rating";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { addReview, getReviews } from "@/store/shop/review-slice";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "../ui/badge";
@@ -41,9 +41,6 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const [selectedColor, setSelectedColor] = useState(null);
   const [activeImg, setActiveImg] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const [communityPhotos, setCommunityPhotos] = useState([]);
-  const [communityComment, setCommunityComment] = useState("");
-  const fileInputRef = useRef(null);
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -144,7 +141,6 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
     setSelectedSize(null);
     setSelectedColor(null);
     setActiveImg(0);
-    setCommunityComment("");
   }
 
   function handleAddReview() {
@@ -166,19 +162,6 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         toast({ title: "Review added successfully!" });
       }
     }).finally(() => setReviewLoading(false));
-  }
-
-  function handleCommunityPhotoUpload(e) {
-    const files = Array.from(e.target.files);
-    const newPhotos = files.map((file) => URL.createObjectURL(file));
-    setCommunityPhotos((prev) => [...prev, ...newPhotos].slice(0, 4));
-  }
-
-  function handleCommunitySubmit() {
-    if (!communityComment.trim() && communityPhotos.length === 0) return;
-    toast({ title: "Thanks for sharing with the community!" });
-    setCommunityComment("");
-    setCommunityPhotos([]);
   }
 
   useEffect(() => {
@@ -411,57 +394,6 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
             </div>
           </div>
 
-          {/* Community Section */}
-          <Separator className="my-4" />
-          <div>
-            <h3 className="text-base font-bold mb-2 flex items-center gap-2">
-              <Camera className="w-4 h-4" /> Community
-            </h3>
-
-            {/* Uploaded photos preview */}
-            {communityPhotos.length > 0 && (
-              <div className="flex gap-2 mb-3 flex-wrap">
-                {communityPhotos.map((photo, i) => (
-                  <div key={i} className="w-16 h-16 rounded-lg overflow-hidden border">
-                    <img src={photo} alt={`Community ${i}`} className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                ref={fileInputRef}
-                onChange={handleCommunityPhotoUpload}
-                className="hidden"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                className="gap-1.5 text-xs"
-              >
-                <Upload className="w-3.5 h-3.5" /> Photo
-              </Button>
-              <Input
-                value={communityComment}
-                onChange={(e) => setCommunityComment(e.target.value)}
-                placeholder="Add a comment..."
-                className="flex-1 h-9 text-sm"
-              />
-              <Button
-                size="sm"
-                onClick={handleCommunitySubmit}
-                disabled={!communityComment.trim() && communityPhotos.length === 0}
-                className="bg-[#6B1E2E] hover:bg-[#5a1928] text-xs"
-              >
-                Share
-              </Button>
-            </div>
-          </div>
         </div>
       </DialogContent>
     </Dialog>
