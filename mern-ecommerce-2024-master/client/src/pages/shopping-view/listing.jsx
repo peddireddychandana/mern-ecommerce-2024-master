@@ -78,14 +78,14 @@ function ShoppingListing() {
     dispatch(fetchProductDetails(getCurrentProductId));
   }
 
-  function handleAddtoCart(getCurrentProductId, getTotalStock) {
+  function handleAddtoCart(getCurrentProductId, getTotalStock, selectedSize, selectedColor) {
     if (cartLoading) return;
     setCartLoading(true);
     let getCartItems = cartItems.items || [];
 
     if (getCartItems.length) {
       const indexOfCurrentItem = getCartItems.findIndex(
-        (item) => item.productId === getCurrentProductId
+        (item) => item.productId === getCurrentProductId && item.selectedSize === (selectedSize || "") && item.selectedColor === (selectedColor || "")
       );
 
       if (indexOfCurrentItem > -1) {
@@ -106,6 +106,8 @@ function ShoppingListing() {
         userId: user?.id,
         productId: getCurrentProductId,
         quantity: 1,
+        selectedSize,
+        selectedColor,
       })
     ).then((data) => {
       if (data?.payload?.success) {
@@ -115,14 +117,14 @@ function ShoppingListing() {
     }).finally(() => setCartLoading(false));
   }
 
-  function handleBuyNow(getCurrentProductId, getTotalStock) {
+  function handleBuyNow(getCurrentProductId, getTotalStock, selectedSize, selectedColor) {
     if (buyLoading) return;
     setBuyLoading(true);
     let getCartItems = cartItems.items || [];
 
     if (getCartItems.length) {
       const indexOfCurrentItem = getCartItems.findIndex(
-        (item) => item.productId === getCurrentProductId
+        (item) => item.productId === getCurrentProductId && item.selectedSize === (selectedSize || "") && item.selectedColor === (selectedColor || "")
       );
 
       if (indexOfCurrentItem > -1) {
@@ -143,6 +145,8 @@ function ShoppingListing() {
         userId: user?.id,
         productId: getCurrentProductId,
         quantity: 1,
+        selectedSize,
+        selectedColor,
       })
     ).then((data) => {
       if (data?.payload?.success) {

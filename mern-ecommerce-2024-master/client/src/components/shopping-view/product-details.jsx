@@ -69,7 +69,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
 
     if (getCartItems.length) {
       const indexOfCurrentItem = getCartItems.findIndex(
-        (item) => item.productId === getCurrentProductId
+        (item) => item.productId === getCurrentProductId && item.selectedSize === (selectedSize || "") && item.selectedColor === (selectedColor || "")
       );
       if (indexOfCurrentItem > -1) {
         const getQuantity = getCartItems[indexOfCurrentItem].quantity;
@@ -88,6 +88,8 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         userId: user?.id,
         productId: getCurrentProductId,
         quantity: 1,
+        selectedSize,
+        selectedColor,
       })
     ).then((data) => {
       if (data?.payload?.success) {
@@ -103,7 +105,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
 
     if (getCartItems.length) {
       const indexOfCurrentItem = getCartItems.findIndex(
-        (item) => item.productId === getCurrentProductId
+        (item) => item.productId === getCurrentProductId && item.selectedSize === (selectedSize || "") && item.selectedColor === (selectedColor || "")
       );
       if (indexOfCurrentItem > -1) {
         const getQuantity = getCartItems[indexOfCurrentItem].quantity;
@@ -122,6 +124,8 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         userId: user?.id,
         productId: getCurrentProductId,
         quantity: 1,
+        selectedSize,
+        selectedColor,
       })
     ).then((data) => {
       if (data?.payload?.success) {

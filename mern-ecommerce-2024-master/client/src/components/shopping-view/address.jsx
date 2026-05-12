@@ -168,6 +168,9 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
     setDeletingAddressId(getCurrentAddress._id);
     dispatch(deleteAddress({ userId: user?.id, addressId: getCurrentAddress._id })).then((data) => {
       if (data?.payload?.success) {
+        if (selectedId?._id === getCurrentAddress._id) {
+          setCurrentSelectedAddress(null);
+        }
         dispatch(fetchAllAddresses(user?.id));
         toast({ title: "Address deleted successfully" });
       } else {

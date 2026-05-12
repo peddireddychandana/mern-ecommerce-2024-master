@@ -3,7 +3,7 @@ const Product = require("../../models/Product");
 
 const addToCart = async (req, res) => {
   try {
-    const { userId, productId, quantity } = req.body;
+    const { userId, productId, quantity, selectedSize, selectedColor } = req.body;
 
     if (!userId || !productId || quantity <= 0) {
       return res.status(400).json({
@@ -28,7 +28,10 @@ const addToCart = async (req, res) => {
     }
 
     const findCurrentProductIndex = cart.items.findIndex(
-      (item) => item.productId.toString() === productId
+      (item) =>
+        item.productId.toString() === productId &&
+        item.selectedSize === (selectedSize || "") &&
+        item.selectedColor === (selectedColor || "")
     );
 
     if (findCurrentProductIndex === -1) {
@@ -38,7 +41,7 @@ const addToCart = async (req, res) => {
           message: `Only ${product.totalStock} items available in stock.`,
         });
       }
-      cart.items.push({ productId, quantity });
+      cart.items.push({ productId, quantity, selectedSize: selectedSize || "", selectedColor: selectedColor || "" });
     } else {
       const newQty = cart.items[findCurrentProductIndex].quantity + quantity;
       if (newQty > product.totalStock) {
@@ -103,15 +106,9 @@ const fetchCartItems = async (req, res) => {
       price: item.productId.price,
       salePrice: item.productId.salePrice,
       quantity: item.quantity,
+      selectedSize: item.selectedSize || "",
+      selectedColor: item.selectedColor || "",
     }));
-
-    res.status(200).json({
-      success: true,
-      data: {
-        ...cart._doc,
-        items: populateCartItems,
-      },
-    });
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -123,7 +120,7 @@ const fetchCartItems = async (req, res) => {
 
 const updateCartItemQty = async (req, res) => {
   try {
-    const { userId, productId, quantity } = req.body;
+    const { userId, productId, quantity, selectedSize, selectedColor } = req.body;
 
     if (!userId || !productId || quantity <= 0) {
       return res.status(400).json({
@@ -141,7 +138,10 @@ const updateCartItemQty = async (req, res) => {
     }
 
     const findCurrentProductIndex = cart.items.findIndex(
-      (item) => item.productId.toString() === productId
+      (item) =>
+        item.productId.toString() === productId &&
+        item.selectedSize === (selectedSize || "") &&
+        item.selectedColor === (selectedColor || "")
     );
 
     if (findCurrentProductIndex === -1) {
@@ -166,6 +166,8 @@ const updateCartItemQty = async (req, res) => {
       price: item.productId ? item.productId.price : null,
       salePrice: item.productId ? item.productId.salePrice : null,
       quantity: item.quantity,
+      selectedSize: item.selectedSize || "",
+      selectedColor: item.selectedColor || "",
     }));
 
     res.status(200).json({
@@ -187,6 +189,7 @@ const updateCartItemQty = async (req, res) => {
 const deleteCartItem = async (req, res) => {
   try {
     const { userId, productId } = req.params;
+    const { selectedSize, selectedColor } = req.query;
     if (!userId || !productId) {
       return res.status(400).json({
         success: false,
@@ -194,10 +197,7 @@ const deleteCartItem = async (req, res) => {
       });
     }
 
-    const cart = await Cart.findOne({ userId }).populate({
-      path: "items.productId",
-      select: "image title price salePrice",
-    });
+    const cart = await Cart.findOne({ userId });
 
     if (!cart) {
       return res.status(404).json({
@@ -207,7 +207,10 @@ const deleteCartItem = async (req, res) => {
     }
 
     cart.items = cart.items.filter(
-      (item) => item.productId._id.toString() !== productId
+      (item) =>
+        !(item.productId.toString() === productId &&
+          item.selectedSize === (selectedSize || "") &&
+          item.selectedColor === (selectedColor || ""))
     );
 
     await cart.save();
@@ -224,6 +227,8 @@ const deleteCartItem = async (req, res) => {
       price: item.productId ? item.productId.price : null,
       salePrice: item.productId ? item.productId.salePrice : null,
       quantity: item.quantity,
+      selectedSize: item.selectedSize || "",
+      selectedColor: item.selectedColor || "",
     }));
 
     res.status(200).json({

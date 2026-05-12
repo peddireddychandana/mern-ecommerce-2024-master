@@ -20,6 +20,10 @@ function UserCartItemsContent({ cartItem }) {
     ? (cartItem?.price - cartItem?.salePrice) * cartItem?.quantity
     : 0;
 
+  const COLOR_HEX = {
+    Red: "#DC2626", Blue: "#2563EB", Black: "#1F2937", White: "#F9FAFB", Green: "#16A34A",
+  };
+
   function handleUpdateQuantity(getCartItem, typeOfAction) {
     if (loadingQty) return;
     if (typeOfAction == "plus") {
@@ -27,15 +31,13 @@ function UserCartItemsContent({ cartItem }) {
 
       if (getCartItems.length) {
         const indexOfCurrentCartItem = getCartItems.findIndex(
-          (item) => item.productId === getCartItem?.productId
+          (item) => item.productId === getCartItem?.productId && item.selectedSize === (getCartItem?.selectedSize || "") && item.selectedColor === (getCartItem?.selectedColor || "")
         );
 
         const getCurrentProductIndex = productList.findIndex(
           (product) => product._id === getCartItem?.productId
         );
-        const getTotalStock = productList[getCurrentProductIndex].totalStock;
-
-        console.log(getCurrentProductIndex, getTotalStock, "getTotalStock");
+        const getTotalStock = getCurrentProductIndex >= 0 ? productList[getCurrentProductIndex].totalStock : 999;
 
         if (indexOfCurrentCartItem > -1) {
           const getQuantity = getCartItems[indexOfCurrentCartItem].quantity;
@@ -60,6 +62,8 @@ function UserCartItemsContent({ cartItem }) {
           typeOfAction === "plus"
             ? getCartItem?.quantity + 1
             : getCartItem?.quantity - 1,
+        selectedSize: getCartItem?.selectedSize,
+        selectedColor: getCartItem?.selectedColor,
       })
     ).then((data) => {
       if (data?.payload?.success) {
@@ -74,7 +78,12 @@ function UserCartItemsContent({ cartItem }) {
     if (deleting) return;
     setDeleting(true);
     dispatch(
-      deleteCartItem({ userId: user?.id, productId: getCartItem?.productId })
+      deleteCartItem({
+        userId: user?.id,
+        productId: getCartItem?.productId,
+        selectedSize: getCartItem?.selectedSize,
+        selectedColor: getCartItem?.selectedColor,
+      })
     ).then((data) => {
       if (data?.payload?.success) {
         toast({
@@ -93,6 +102,23 @@ function UserCartItemsContent({ cartItem }) {
       />
       <div className="min-w-0 flex-1">
         <h3 className="font-extrabold text-sm sm:text-base truncate">{cartItem?.title}</h3>
+        {(cartItem?.selectedSize || cartItem?.selectedColor) && (
+          <div className="flex items-center gap-2 mt-0.5">
+            {cartItem?.selectedSize && (
+              <span className="text-[11px] font-medium text-gray-500">Size: {cartItem.selectedSize}</span>
+            )}
+            {cartItem?.selectedColor && (
+              <span className="flex items-center gap-1 text-[11px] font-medium text-gray-500">
+                Color:
+                <span
+                  className="inline-block w-3 h-3 rounded-full border border-gray-300"
+                  style={{ backgroundColor: COLOR_HEX[cartItem.selectedColor] || cartItem.selectedColor }}
+                />
+                {cartItem.selectedColor}
+              </span>
+            )}
+          </div>
+        )}
         {cartItem?.salePrice > 0 && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <span className="line-through">{formatPrice(cartItem?.price)}</span>

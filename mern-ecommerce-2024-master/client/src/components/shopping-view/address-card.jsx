@@ -1,4 +1,4 @@
-import { MapPin, Home, Briefcase, Building2 } from "lucide-react";
+import { MapPin, Home, Briefcase, Building2, Star } from "lucide-react";
 
 const typeConfig = {
   Home: { icon: Home, color: "bg-blue-100 text-blue-700" },

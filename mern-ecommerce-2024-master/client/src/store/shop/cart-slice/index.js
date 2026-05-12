@@ -9,13 +9,15 @@ const initialState = {
 
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
-  async ({ userId, productId, quantity }) => {
+  async ({ userId, productId, quantity, selectedSize, selectedColor }) => {
     const response = await axios.post(
       `${API_BASE_URL}/shop/cart/add`,
       {
         userId,
         productId,
         quantity,
+        selectedSize,
+        selectedColor,
       }
     );
 
@@ -36,9 +38,10 @@ export const fetchCartItems = createAsyncThunk(
 
 export const deleteCartItem = createAsyncThunk(
   "cart/deleteCartItem",
-  async ({ userId, productId }) => {
+  async ({ userId, productId, selectedSize, selectedColor }) => {
     const response = await axios.delete(
-      `${API_BASE_URL}/shop/cart/${userId}/${productId}`
+      `${API_BASE_URL}/shop/cart/${userId}/${productId}`,
+      { params: { selectedSize, selectedColor } }
     );
 
     return response.data;
@@ -47,13 +50,15 @@ export const deleteCartItem = createAsyncThunk(
 
 export const updateCartQuantity = createAsyncThunk(
   "cart/updateCartQuantity",
-  async ({ userId, productId, quantity }) => {
+  async ({ userId, productId, quantity, selectedSize, selectedColor }) => {
     const response = await axios.put(
       `${API_BASE_URL}/shop/cart/update-cart`,
       {
         userId,
         productId,
         quantity,
+        selectedSize,
+        selectedColor,
       }
     );
 

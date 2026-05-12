@@ -19,6 +19,14 @@ const CartSchema = new mongoose.Schema(
           required: true,
           min: 1,
         },
+        selectedSize: {
+          type: String,
+          default: "",
+        },
+        selectedColor: {
+          type: String,
+          default: "",
+        },
       },
     ],
   },

@@ -159,11 +159,13 @@ function AdminOrderDetailsView({ orderDetails }) {
               <ul className="grid gap-3">
                 {orderDetails?.cartItems && orderDetails?.cartItems.length > 0
                   ? orderDetails?.cartItems.map((item, idx) => (
-                      <li key={idx} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2 border-b border-gray-100 last:border-0 text-sm">
-                        <span>Title: {item.title}</span>
-                        <span>Quantity: {item.quantity}</span>
-                        <span>Price: {formatPrice(item.price)}</span>
-                      </li>
+                        <li key={idx} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2 border-b border-gray-100 last:border-0 text-sm">
+                          <span>Title: {item.title}</span>
+                          {item.selectedSize && <span>Size: {item.selectedSize}</span>}
+                          {item.selectedColor && <span>Color: {item.selectedColor}</span>}
+                          <span>Quantity: {item.quantity}</span>
+                          <span>Price: {formatPrice(item.price)}</span>
+                        </li>
                     ))
                   : null}
               </ul>
