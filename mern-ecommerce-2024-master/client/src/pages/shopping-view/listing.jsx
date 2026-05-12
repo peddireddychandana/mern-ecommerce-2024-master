@@ -17,7 +17,7 @@ import {
   fetchAllFilteredProducts,
   fetchProductDetails,
 } from "@/store/shop/products-slice";
-import { ArrowUpDownIcon, SlidersHorizontal } from "lucide-react";
+import { ArrowUpDownIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -37,7 +37,6 @@ function ShoppingListing() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
   const [buyLoading, setBuyLoading] = useState(false);
   const { toast } = useToast();
@@ -217,13 +216,10 @@ function ShoppingListing() {
 
   return (
     <div ref={containerRef} className="container mx-auto px-4 py-6">
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-6">
         {/* FILTER SIDEBAR */}
         <FilterSidebar
           filters={filters}
-          handleFilter={handleFilter}
-          isMobileOpen={isMobileSidebarOpen}
-          setIsMobileOpen={setIsMobileSidebarOpen}
           onApply={(appliedFilters) => {
             setFilters(appliedFilters);
             sessionStorage.setItem("filters", JSON.stringify(appliedFilters));
@@ -242,15 +238,6 @@ function ShoppingListing() {
               <h2 className="text-lg font-bold text-gray-900">
                 All Products
               </h2>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsMobileSidebarOpen(true)}
-                className="md:hidden flex items-center gap-2"
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                Filters
-              </Button>
             </div>
             <div className="flex items-center gap-2 sm:ml-auto">
               <DropdownMenu>
