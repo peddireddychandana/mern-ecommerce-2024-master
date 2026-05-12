@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { createNewOrder, uploadPaymentScreenshot, confirmUPIPayment } from "@/store/shop/order-slice";
 import { useToast } from "@/components/ui/use-toast";
 import { QRCodeSVG } from "qrcode.react";
-import { UploadCloudIcon, FileIcon, XIcon } from "lucide-react";
+import { UploadCloudIcon, FileIcon, XIcon, MapPin, ChevronDown } from "lucide-react";
 import { formatPrice } from "@/lib/format-price";
 
 function ShoppingCheckout() {
@@ -19,6 +20,7 @@ function ShoppingCheckout() {
   const { user } = useSelector((state) => state.auth);
   const { orderId } = useSelector((state) => state.shopOrder);
   const [currentSelectedAddress, setCurrentSelectedAddress] = useState(null);
+  const [addressDialogOpen, setAddressDialogOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [orderCreated, setOrderCreated] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -295,10 +297,40 @@ function ShoppingCheckout() {
         <img src={img} className="h-full w-full object-cover object-center" />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 mt-4 sm:mt-5 p-3 sm:p-5 max-w-7xl mx-auto w-full">
-        <Address
-          selectedId={currentSelectedAddress}
-          setCurrentSelectedAddress={setCurrentSelectedAddress}
-        />
+        <div className="space-y-3">
+          <Dialog open={addressDialogOpen} onOpenChange={setAddressDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="w-full justify-between gap-2 h-auto py-3 px-4">
+                <div className="flex items-center gap-2 text-left">
+                  <MapPin className="w-5 h-5 shrink-0 text-[#6B1E2E]" />
+                  <div>
+                    {currentSelectedAddress ? (
+                      <>
+                        <p className="font-semibold text-sm">{currentSelectedAddress.address}</p>
+                        <p className="text-xs text-gray-500">{currentSelectedAddress.city} - {currentSelectedAddress.pincode}</p>
+                      </>
+                    ) : (
+                      <p className="text-sm font-medium">Select Delivery Address</p>
+                    )}
+                  </div>
+                </div>
+                <ChevronDown className="w-4 h-4 shrink-0 text-gray-400" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Select Delivery Address</DialogTitle>
+              </DialogHeader>
+              <Address
+                selectedId={currentSelectedAddress}
+                setCurrentSelectedAddress={(addr) => {
+                  setCurrentSelectedAddress(addr);
+                  setAddressDialogOpen(false);
+                }}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
         <div className="flex flex-col gap-3 sm:gap-4">
           {cartItems && cartItems.items && cartItems.items.length > 0
             ? cartItems.items.map((item) => (
