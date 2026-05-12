@@ -10,7 +10,7 @@ import {
   getSearchResults,
   resetSearchResults,
 } from "@/store/shop/search-slice";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
@@ -40,6 +40,7 @@ function SearchProducts() {
   const [cartLoading, setCartLoading] = useState(false);
   const [buyLoading, setBuyLoading] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const initialSyncDone = useRef(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { searchResults, isLoading } = useSelector((state) => state.shopSearch);
@@ -56,6 +57,14 @@ function SearchProducts() {
     )
   }, [dispatch])
 
+  useEffect(() => {
+    const keywordParam = searchParams.get("keyword");
+    if (keywordParam) {
+      setKeyword(keywordParam);
+    }
+    initialSyncDone.current = true;
+  }, []);
+
   const { productList } = useSelector((state) => state.shopProducts)
   const displayProducts = !searched ? (productList?.length ? productList : defaultProducts) : searchResults
 
@@ -64,14 +73,18 @@ function SearchProducts() {
     if (trimmed) {
       setSearched(true);
       const timer = setTimeout(() => {
-        setSearchParams(new URLSearchParams(`?keyword=${trimmed}`));
+        if (initialSyncDone.current) {
+          setSearchParams(new URLSearchParams(`?keyword=${trimmed}`));
+        }
         dispatch(getSearchResults(trimmed));
       }, 600);
       return () => clearTimeout(timer);
     } else {
       setSearched(false);
-      setSearchParams(new URLSearchParams());
-      dispatch(resetSearchResults());
+      if (initialSyncDone.current) {
+        setSearchParams(new URLSearchParams());
+        dispatch(resetSearchResults());
+      }
     }
   }, [keyword]);
 

@@ -18,6 +18,7 @@ import {
   fetchAllFilteredProducts,
   fetchProductDetails,
 } from "@/store/shop/products-slice";
+import { setProductDetails } from "@/store/shop/products-slice";
 import { ArrowUpDownIcon, SlidersHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -43,12 +44,11 @@ function ShoppingListing() {
   const [buyLoading, setBuyLoading] = useState(false);
   const { toast } = useToast();
 
-  const categorySearchParam = searchParams.get("category");
-
   // refs for animation
   const containerRef = useRef(null);
   const productRefs = useRef([]);
   const addingRef = useRef(false);
+  const initialSyncDone = useRef(false);
 
   function handleSort(value) {
     setSort(value);
@@ -186,21 +186,45 @@ function ShoppingListing() {
     }
   }, [productList]);
 
-  // FILTER + SORT EFFECTS
+  // INIT STATE FROM URL ON MOUNT
   useEffect(() => {
-    setSort("price-lowtohigh");
-    setFilters(JSON.parse(sessionStorage.getItem("filters")) || {});
-  }, [categorySearchParam]);
-
-  useEffect(() => {
-    if (filters && Object.keys(filters).length > 0) {
-      const query = Object.entries(filters)
-        .map(([k, v]) => `${k}=${v.join(",")}`)
-        .join("&");
-      setSearchParams(new URLSearchParams(query));
+    const savedFilters = JSON.parse(sessionStorage.getItem("filters"));
+    const categoryParam = searchParams.get("category");
+    if (savedFilters && Object.keys(savedFilters).length > 0) {
+      setFilters(savedFilters);
+    } else if (categoryParam) {
+      const fromUrl = { category: categoryParam.split(",") };
+      setFilters(fromUrl);
+      sessionStorage.setItem("filters", JSON.stringify(fromUrl));
     }
-  }, [filters]);
+    setSort(searchParams.get("sort") || "price-lowtohigh");
+    const productParam = searchParams.get("product");
+    if (productParam) dispatch(fetchProductDetails(productParam));
+    initialSyncDone.current = true;
+  }, []);
 
+  // SYNC FILTERS → URL
+  useEffect(() => {
+    if (!initialSyncDone.current) return;
+    const params = new URLSearchParams(searchParams);
+    if (filters && Object.keys(filters).length > 0) {
+      Object.entries(filters).forEach(([k, v]) => params.set(k, v.join(",")));
+    } else {
+      params.delete("category");
+    }
+    if (!openDetailsDialog) params.delete("product");
+    setSearchParams(params);
+  }, [filters, openDetailsDialog]);
+
+  // SYNC SORT → URL
+  useEffect(() => {
+    if (!initialSyncDone.current) return;
+    const params = new URLSearchParams(searchParams);
+    if (sort) params.set("sort", sort);
+    setSearchParams(params);
+  }, [sort]);
+
+  // FETCH PRODUCTS
   useEffect(() => {
     if (filters !== null && sort !== null)
       dispatch(
@@ -208,9 +232,29 @@ function ShoppingListing() {
       );
   }, [dispatch, sort, filters]);
 
+  // OPEN DIALOG + SYNC product PARAM
   useEffect(() => {
-    if (productDetails !== null) setOpenDetailsDialog(true);
+    if (productDetails !== null) {
+      setOpenDetailsDialog(true);
+      const params = new URLSearchParams(searchParams);
+      params.set("product", productDetails._id);
+      if (filters && Object.keys(filters).length > 0) {
+        Object.entries(filters).forEach(([k, v]) => params.set(k, v.join(",")));
+      }
+      if (sort) params.set("sort", sort);
+      setSearchParams(params);
+    }
   }, [productDetails]);
+
+  function handleOpenDetailsDialogChange(open) {
+    if (!open) {
+      const params = new URLSearchParams(searchParams);
+      params.delete("product");
+      setSearchParams(params);
+      dispatch(setProductDetails());
+    }
+    setOpenDetailsDialog(open);
+  }
 
   // HOVER EFFECT (delegated animation helper)
   function handleHover(i, enter) {
@@ -327,7 +371,7 @@ function ShoppingListing() {
       {/* DETAILS MODAL */}
       <ProductDetailsDialog
         open={openDetailsDialog}
-        setOpen={setOpenDetailsDialog}
+        setOpen={handleOpenDetailsDialogChange}
         productDetails={productDetails}
       />
     </div>

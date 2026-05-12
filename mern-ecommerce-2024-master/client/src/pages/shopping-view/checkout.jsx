@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { createNewOrder, uploadPaymentScreenshot, confirmUPIPayment } from "@/store/shop/order-slice";
+import { fetchAllAddresses } from "@/store/shop/address-slice";
 import { useToast } from "@/components/ui/use-toast";
 import { QRCodeSVG } from "qrcode.react";
 import { UploadCloudIcon, FileIcon, XIcon, MapPin, ChevronDown } from "lucide-react";
@@ -19,6 +20,7 @@ function ShoppingCheckout() {
   const { cartItems } = useSelector((state) => state.shopCart);
   const { user } = useSelector((state) => state.auth);
   const { orderId } = useSelector((state) => state.shopOrder);
+  const { addressList } = useSelector((state) => state.shopAddress);
   const [currentSelectedAddress, setCurrentSelectedAddress] = useState(null);
   const [addressDialogOpen, setAddressDialogOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("upi");
@@ -36,6 +38,33 @@ function ShoppingCheckout() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (user?.id) dispatch(fetchAllAddresses(user?.id));
+    const savedId = localStorage.getItem("selectedAddressId");
+    if (savedId) {
+      if (addressList?.length) {
+        const found = addressList.find(a => a._id === savedId);
+        if (found) setCurrentSelectedAddress(found);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (addressList?.length) {
+      const savedId = localStorage.getItem("selectedAddressId");
+      if (savedId) {
+        const found = addressList.find(a => a._id === savedId);
+        if (found) setCurrentSelectedAddress(found);
+      }
+    }
+  }, [addressList]);
+
+  useEffect(() => {
+    if (currentSelectedAddress?._id) {
+      localStorage.setItem("selectedAddressId", currentSelectedAddress._id);
+    }
+  }, [currentSelectedAddress]);
 
   const UPI_ID = "125006216930@cnrb";
   const BUSINESS_NAME = "SRI RAMAKRISHNA TEXTILES";

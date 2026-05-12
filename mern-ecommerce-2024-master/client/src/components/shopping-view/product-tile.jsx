@@ -151,7 +151,7 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
                 loading={cartLoading}
                 loadingText=""
               >
-                <ShoppingCart className="w-3.5 h-3.5 shrink-0" /> <span className="hidden sm:inline">Cart</span>
+                <ShoppingCart className="w-3.5 h-3.5 shrink-0" /> <span>Cart</span>
               </Button>
               <Button
                 onClick={onBuyNow}
