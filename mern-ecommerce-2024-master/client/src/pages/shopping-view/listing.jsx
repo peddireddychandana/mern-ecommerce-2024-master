@@ -233,7 +233,7 @@ function ShoppingListing() {
         {/* PRODUCTS */}
         <div className="flex-1 min-w-0 bg-white rounded-xl border border-gray-100 shadow-sm">
           {/* HEADER */}
-          <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="sticky top-0 z-10 bg-white p-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center gap-3 rounded-t-xl">
             <div className="flex items-center justify-between sm:justify-start gap-3">
               <h2 className="text-lg font-bold text-gray-900">
                 All Products

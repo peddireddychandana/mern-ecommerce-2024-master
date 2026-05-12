@@ -1,4 +1,4 @@
-import { Heart, ShoppingCart, Eye, Star } from "lucide-react";
+import { ShoppingCart, Eye, Star } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { categoryOptionsMap } from "@/config";
@@ -14,8 +14,6 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
   const [cartLoading, setCartLoading] = useState(false);
   const [buyLoading, setBuyLoading] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
-
   const discount = getDiscountPercent(product?.price, product?.salePrice);
   const isOutOfStock = product?.totalStock === 0;
   const isLowStock = !isOutOfStock && product?.totalStock < 10;
@@ -50,11 +48,6 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
     handleGetProductDetails(product?._id);
   }
 
-  function toggleWishlist(e) {
-    e.stopPropagation();
-    setIsWishlisted(!isWishlisted);
-  }
-
   return (
     <div className="group relative bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       {/* IMAGE */}
@@ -72,19 +65,6 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
             imgLoaded ? "opacity-100 group-hover:scale-110" : "opacity-0"
           }`}
         />
-
-        {/* Wishlist */}
-        <button
-          onClick={toggleWishlist}
-          className={`absolute top-3 right-3 z-10 p-2 rounded-full transition-all duration-200 ${
-            isWishlisted
-              ? "bg-red-50 text-red-500"
-              : "bg-white/80 text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-white"
-          }`}
-          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-        >
-          <Heart className={`w-4 h-4 ${isWishlisted ? "fill-red-500" : ""}`} />
-        </button>
 
         {/* Badges */}
         <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
