@@ -17,7 +17,7 @@ import {
   fetchAllFilteredProducts,
   fetchProductDetails,
 } from "@/store/shop/products-slice";
-import { ArrowUpDownIcon } from "lucide-react";
+import { ArrowUpDownIcon, SlidersHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -37,6 +37,7 @@ function ShoppingListing() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
   const [cartLoading, setCartLoading] = useState(false);
   const [buyLoading, setBuyLoading] = useState(false);
   const { toast } = useToast();
@@ -218,17 +219,20 @@ function ShoppingListing() {
     <div ref={containerRef} className="container mx-auto px-4 py-6">
       <div className="flex flex-col md:flex-row gap-6">
         {/* FILTER SIDEBAR */}
-        <FilterSidebar
-          filters={filters}
-          onApply={(appliedFilters) => {
-            setFilters(appliedFilters);
-            sessionStorage.setItem("filters", JSON.stringify(appliedFilters));
-          }}
-          onClear={() => {
-            setFilters({});
-            sessionStorage.removeItem("filters");
-          }}
-        />
+        {showFilters && (
+          <FilterSidebar
+            filters={filters}
+            onApply={(appliedFilters) => {
+              setFilters(appliedFilters);
+              sessionStorage.setItem("filters", JSON.stringify(appliedFilters));
+              setShowFilters(false);
+            }}
+            onClear={() => {
+              setFilters({});
+              sessionStorage.removeItem("filters");
+            }}
+          />
+        )}
 
         {/* PRODUCTS */}
         <div className="flex-1 min-w-0 bg-white rounded-xl border border-gray-100 shadow-sm">
@@ -238,6 +242,15 @@ function ShoppingListing() {
               <h2 className="text-lg font-bold text-gray-900">
                 All Products
               </h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                {showFilters ? "Hide Filters" : "Filters"}
+              </Button>
             </div>
             <div className="flex items-center gap-2 sm:ml-auto">
               <DropdownMenu>
