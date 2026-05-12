@@ -307,17 +307,6 @@ function ShoppingListing() {
         </div>
       </div>
 
-      {/* MOBILE STICKY FILTER BUTTON */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 md:hidden">
-        <Button
-          onClick={() => setIsMobileSidebarOpen(true)}
-          className="bg-[#6B1E2E] hover:bg-[#5a1a27] text-white rounded-full shadow-lg h-12 px-6 flex items-center gap-2 transition-transform active:scale-95"
-        >
-          <SlidersHorizontal className="h-4 w-4" />
-          Filters
-        </Button>
-      </div>
-
       {/* DETAILS MODAL */}
       <ProductDetailsDialog
         open={openDetailsDialog}
