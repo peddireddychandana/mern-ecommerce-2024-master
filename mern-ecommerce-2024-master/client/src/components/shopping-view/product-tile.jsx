@@ -2,7 +2,7 @@ import { ShoppingCart, Eye, Star } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { categoryOptionsMap } from "@/config";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { formatPrice } from "@/lib/format-price";
 
 function getDiscountPercent(price, salePrice) {
@@ -14,6 +14,7 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
   const [cartLoading, setCartLoading] = useState(false);
   const [buyLoading, setBuyLoading] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const addingRef = useRef(false);
   const discount = getDiscountPercent(product?.price, product?.salePrice);
   const isOutOfStock = product?.totalStock === 0;
   const isLowStock = !isOutOfStock && product?.totalStock < 10;
@@ -27,11 +28,15 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
 
   function onAddToCart(e) {
     e.stopPropagation();
-    if (cartLoading || isOutOfStock) return;
+    if (addingRef.current || isOutOfStock) return;
+    addingRef.current = true;
     setCartLoading(true);
     const r = handleAddtoCart(product?._id, product?.totalStock, "", "");
-    if (r && typeof r.finally === "function") r.finally(() => setCartLoading(false));
-    else setTimeout(() => setCartLoading(false), 2000);
+    if (r && typeof r.finally === "function") {
+      r.finally(() => { addingRef.current = false; setCartLoading(false); });
+    } else {
+      setTimeout(() => { addingRef.current = false; setCartLoading(false); }, 2000);
+    }
   }
 
   function onBuyNow(e) {

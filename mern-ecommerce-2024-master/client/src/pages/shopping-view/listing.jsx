@@ -48,6 +48,7 @@ function ShoppingListing() {
   // refs for animation
   const containerRef = useRef(null);
   const productRefs = useRef([]);
+  const addingRef = useRef(false);
 
   function handleSort(value) {
     setSort(value);
@@ -80,7 +81,8 @@ function ShoppingListing() {
   }
 
   function handleAddtoCart(getCurrentProductId, getTotalStock, selectedSize, selectedColor) {
-    if (cartLoading) return;
+    if (addingRef.current) return;
+    addingRef.current = true;
     setCartLoading(true);
     let getCartItems = cartItems.items || [];
 
@@ -115,7 +117,7 @@ function ShoppingListing() {
         dispatch(fetchCartItems(user?.id));
         toast({ title: "Product added to cart" });
       }
-    }).finally(() => setCartLoading(false));
+    }).finally(() => { addingRef.current = false; setCartLoading(false); });
   }
 
   function handleBuyNow(getCurrentProductId, getTotalStock, selectedSize, selectedColor) {
