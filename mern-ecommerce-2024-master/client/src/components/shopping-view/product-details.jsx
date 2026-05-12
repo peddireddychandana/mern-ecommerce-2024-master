@@ -1,4 +1,4 @@
-import { StarIcon, ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { StarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent } from "../ui/dialog";
@@ -40,7 +40,6 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [activeImg, setActiveImg] = useState(0);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -303,17 +302,6 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
               </span>
             )}
           </div>
-
-          {/* Wishlist button */}
-          <button
-            onClick={() => setIsWishlisted(!isWishlisted)}
-            className={`mt-3 flex items-center gap-2 text-sm transition-colors ${
-              isWishlisted ? "text-red-500" : "text-gray-500 hover:text-red-400"
-            }`}
-          >
-            <Heart className={`w-4 h-4 ${isWishlisted ? "fill-red-500" : ""}`} />
-            {isWishlisted ? "Added to Wishlist" : "Add to Wishlist"}
-          </button>
 
           <div className="mt-4 sm:mt-5 mb-4 sm:mb-5">
             {productDetails?.totalStock === 0 ? (
