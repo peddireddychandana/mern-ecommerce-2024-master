@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Plus, MapPin, Building2, Phone, StickyNote, Hash, Home, Briefcase } from "lucide-react";
+import { Plus, MapPin, Building2, Phone, StickyNote, Hash, Home, Briefcase, DoorOpen } from "lucide-react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
@@ -21,15 +21,31 @@ const ADDRESS_TYPES = [
   { value: "Other", icon: Building2, label: "Other" },
 ];
 
-function extractState(address) {
-  if (!address) return { baseAddress: "", state: "" };
-  const parts = address.split(", State: ");
-  if (parts.length === 2) return { baseAddress: parts[0], state: parts[1] };
-  return { baseAddress: address, state: "" };
+function extractAddressParts(fullAddress) {
+  if (!fullAddress) return { doorNumber: "", baseAddress: "", state: "" };
+
+  let addr = fullAddress;
+  let doorNumber = "";
+
+  const doorMatch = addr.match(/^Door No:\s*([^,]+),?\s*/);
+  if (doorMatch) {
+    doorNumber = doorMatch[1].trim();
+    addr = addr.slice(doorMatch[0].length).trim();
+  }
+
+  const stateParts = addr.split(", State: ");
+  let state = "";
+  let baseAddress = addr;
+  if (stateParts.length === 2) {
+    baseAddress = stateParts[0];
+    state = stateParts[1];
+  }
+
+  return { doorNumber, baseAddress, state };
 }
 
 function buildFormFromAddress(addr) {
-  const { baseAddress, state } = extractState(addr?.address);
+  const { doorNumber, baseAddress, state } = extractAddressParts(addr?.address);
   let addressType = "Home";
   let notes = addr?.notes || "";
   const typeMatch = notes.match(/^\[(Home|Work|Other)\]/);
@@ -38,19 +54,21 @@ function buildFormFromAddress(addr) {
     notes = notes.replace(/^\[(Home|Work|Other)\]\s*/, "");
   }
   return {
+    doorNumber,
     address: baseAddress,
     city: addr?.city || "",
-    state: state,
+    state,
     pincode: addr?.pincode || "",
     phone: addr?.phone || "",
-    notes: notes,
-    addressType: addressType,
+    notes,
+    addressType,
   };
 }
 
 function Address({ setCurrentSelectedAddress, selectedId }) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
+    doorNumber: "",
     address: "",
     city: "",
     state: "",
@@ -93,7 +111,7 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
 
   function handleOpenAdd() {
     setCurrentEditedId(null);
-    setFormData({ address: "", city: "", state: "", pincode: "", phone: "", notes: "", addressType: "Home" });
+        setFormData({ doorNumber: "", address: "", city: "", state: "", pincode: "", phone: "", notes: "", addressType: "Home" });
     setErrors({});
     setOpen(true);
   }
@@ -117,9 +135,9 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
 
     setLoading(true);
 
-    const fullAddress = formData.state
-      ? `${formData.address}, State: ${formData.state}`
-      : formData.address;
+    let fullAddress = formData.address;
+    if (formData.doorNumber) fullAddress = `Door No: ${formData.doorNumber}, ${fullAddress}`;
+    if (formData.state) fullAddress = `${fullAddress}, State: ${formData.state}`;
     const fullNotes = `[${formData.addressType}] ${formData.notes}`.trim();
 
     const payload = {
@@ -139,7 +157,7 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
         dispatch(fetchAllAddresses(user?.id));
         setOpen(false);
         setCurrentEditedId(null);
-        setFormData({ address: "", city: "", state: "", pincode: "", phone: "", notes: "", addressType: "Home" });
+    setFormData({ doorNumber: "", address: "", city: "", state: "", pincode: "", phone: "", notes: "", addressType: "Home" });
         toast({ title: currentEditedId ? "Address updated successfully" : "Address added successfully" });
       }
     }).finally(() => setLoading(false));
@@ -241,18 +259,33 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Door Number */}
+              <div>
+                <Label htmlFor="doorNumber" className="text-sm font-medium text-gray-700">Door No</Label>
+                <div className="relative mt-1">
+                  <DoorOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    ref={firstInputRef}
+                    id="doorNumber"
+                    value={formData.doorNumber}
+                    onChange={(e) => updateField("doorNumber", e.target.value)}
+                    placeholder="e.g. 4-56/2A"
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+
               {/* Address */}
-              <div className="sm:col-span-2">
-                <Label htmlFor="address" className="text-sm font-medium text-gray-700">Full Address</Label>
+              <div>
+                <Label htmlFor="address" className="text-sm font-medium text-gray-700">Street / Area</Label>
                 <div className="relative mt-1">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Textarea
-                    ref={firstInputRef}
+                  <Input
                     id="address"
                     value={formData.address}
                     onChange={(e) => updateField("address", e.target.value)}
-                    placeholder="Enter your full address"
-                    className={`pl-9 min-h-[60px] ${errors.address ? "border-red-400" : ""}`}
+                    placeholder="Enter street / area"
+                    className={`pl-9 ${errors.address ? "border-red-400" : ""}`}
                   />
                 </div>
                 {errors.address && <p className="text-xs text-red-500 mt-1">{errors.address}</p>}
