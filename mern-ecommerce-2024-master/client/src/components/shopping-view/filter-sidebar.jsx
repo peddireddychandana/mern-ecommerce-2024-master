@@ -1,10 +1,11 @@
 import { X, SlidersHorizontal, RotateCcw } from "lucide-react";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { Button } from "../ui/button";
 import FilterSection from "./filter-section";
 import CheckboxFilter from "./checkbox-filter";
 import { cn } from "@/lib/utils";
 import { filterOptions } from "@/config";
+import toast from "react-hot-toast";
 
 function FilterSidebar({
   filters,
@@ -14,6 +15,12 @@ function FilterSidebar({
   onApply,
   onClear,
 }) {
+  const [localFilters, setLocalFilters] = useState({});
+
+  useEffect(() => {
+    setLocalFilters(structuredClone(filters || {}));
+  }, [filters, isMobileOpen]);
+
   useEffect(() => {
     if (isMobileOpen) {
       document.body.style.overflow = "hidden";
@@ -39,31 +46,56 @@ function FilterSidebar({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  const totalActiveFilters =
-    filters && Object.keys(filters).length > 0
-      ? Object.values(filters).reduce((sum, arr) => sum + arr.length, 0)
-      : 0;
+  function toggleLocalFilter(sectionId, optionId) {
+    setLocalFilters((prev) => {
+      const cpy = { ...prev };
+      const idx = Object.keys(cpy).indexOf(sectionId);
+      if (idx === -1) {
+        cpy[sectionId] = [optionId];
+      } else {
+        const optIdx = cpy[sectionId].indexOf(optionId);
+        if (optIdx === -1) cpy[sectionId].push(optionId);
+        else cpy[sectionId].splice(optIdx, 1);
+        if (!cpy[sectionId].length) delete cpy[sectionId];
+      }
+      return cpy;
+    });
+  }
+
+  function handleApply() {
+    onApply?.(localFilters);
+    setIsMobileOpen(false);
+    const count = Object.values(localFilters).reduce((s, a) => s + a.length, 0);
+    if (count > 0) toast.success(`${count} filter${count > 1 ? "s" : ""} applied`);
+  }
+
+  function handleClear() {
+    setLocalFilters({});
+    onClear?.();
+  }
+
+  const totalActiveFilters = Object.values(localFilters).reduce((s, a) => s + a.length, 0);
 
   function getActiveCountForParent(parent) {
-    if (!filters || !filters.category) return 0;
+    if (!localFilters.category) return 0;
     const parentIds = filterOptions.category
       .filter((o) => o.parent === parent)
       .map((o) => o.id);
-    return filters.category.filter((id) => parentIds.includes(id)).length;
+    return localFilters.category.filter((id) => parentIds.includes(id)).length;
   }
 
   const parents = [...new Set(filterOptions.category.map((o) => o.parent))];
 
   function renderFilterOptions(groupOptions) {
     return groupOptions.map((option) => {
-      const isChecked = filters?.category?.includes(option.id);
+      const isChecked = localFilters?.category?.includes(option.id);
       return (
         <CheckboxFilter
           key={option.id}
           id={option.id}
           label={option.label}
           checked={isChecked}
-          onChange={() => handleFilter("category", option.id)}
+          onChange={() => toggleLocalFilter("category", option.id)}
         />
       );
     });
@@ -106,10 +138,7 @@ function FilterSidebar({
 
       <div className="border-t border-gray-100 p-4 space-y-2">
         <Button
-          onClick={() => {
-            onApply?.();
-            setIsMobileOpen(false);
-          }}
+          onClick={handleApply}
           className="w-full bg-[#6B1E2E] hover:bg-[#5a1a27] text-white rounded-lg h-10 text-sm font-medium"
         >
           Apply Filters
@@ -117,7 +146,7 @@ function FilterSidebar({
         </Button>
         {totalActiveFilters > 0 && (
           <button
-            onClick={() => onClear?.()}
+            onClick={handleClear}
             className="w-full flex items-center justify-center gap-2 py-2.5 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />

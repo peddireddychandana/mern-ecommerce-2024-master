@@ -224,6 +224,10 @@ function ShoppingListing() {
           handleFilter={handleFilter}
           isMobileOpen={isMobileSidebarOpen}
           setIsMobileOpen={setIsMobileSidebarOpen}
+          onApply={(appliedFilters) => {
+            setFilters(appliedFilters);
+            sessionStorage.setItem("filters", JSON.stringify(appliedFilters));
+          }}
           onClear={() => {
             setFilters({});
             sessionStorage.removeItem("filters");
