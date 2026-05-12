@@ -78,6 +78,15 @@ const addressSlice = createSlice({
       .addCase(fetchAllAddresses.rejected, (state) => {
         state.isLoading = false;
         state.addressList = [];
+      })
+      .addCase(deleteAddress.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.addressList = state.addressList.filter(
+          (addr) => addr._id !== action.meta.arg.addressId
+        );
+      })
+      .addCase(deleteAddress.rejected, (state) => {
+        state.isLoading = false;
       });
   },
 });

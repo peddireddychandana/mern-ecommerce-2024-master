@@ -170,7 +170,11 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
       if (data?.payload?.success) {
         dispatch(fetchAllAddresses(user?.id));
         toast({ title: "Address deleted successfully" });
+      } else {
+        toast({ title: data?.payload?.message || "Failed to delete address", variant: "destructive" });
       }
+    }).catch(() => {
+      toast({ title: "Something went wrong", variant: "destructive" });
     }).finally(() => setDeletingAddressId(null));
   }
 

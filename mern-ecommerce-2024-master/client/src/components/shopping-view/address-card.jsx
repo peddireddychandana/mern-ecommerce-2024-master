@@ -1,5 +1,4 @@
-import { MapPin, Home, Briefcase, Building2, Pencil, Trash2, Star } from "lucide-react";
-import { Button } from "../ui/button";
+import { MapPin, Home, Briefcase, Building2 } from "lucide-react";
 
 const typeConfig = {
   Home: { icon: Home, color: "bg-blue-100 text-blue-700" },
@@ -61,21 +60,19 @@ function AddressCard({
           </div>
 
           {/* Actions */}
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="flex gap-2">
             <button
               onClick={(e) => { e.stopPropagation(); handleEditAddress({ ...addressInfo, notes: cleanNotes }); }}
-              className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-blue-600 transition-colors"
-              title="Edit"
+              className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors"
             >
-              <Pencil className="w-3.5 h-3.5" />
+              Edit
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); handleDeleteAddress(addressInfo); }}
-              className="p-1.5 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
-              title="Delete"
+              className="text-xs font-medium text-red-500 hover:text-red-700 hover:underline transition-colors disabled:opacity-40 disabled:no-underline"
               disabled={deletingAddressId === addressInfo?._id}
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              Delete
             </button>
           </div>
         </div>
