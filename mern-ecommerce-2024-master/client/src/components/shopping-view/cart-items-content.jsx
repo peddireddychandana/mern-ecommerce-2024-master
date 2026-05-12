@@ -10,7 +10,7 @@ function UserCartItemsContent({ cartItem }) {
   const { user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
   const { productList } = useSelector((state) => state.shopProducts);
-  const [loadingQty, setLoadingQty] = useState(false);
+  const [loadingAction, setLoadingAction] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -25,7 +25,7 @@ function UserCartItemsContent({ cartItem }) {
   };
 
   function handleUpdateQuantity(getCartItem, typeOfAction) {
-    if (loadingQty) return;
+    if (loadingAction) return;
     if (typeOfAction == "plus") {
       let getCartItems = cartItems.items || [];
 
@@ -53,7 +53,7 @@ function UserCartItemsContent({ cartItem }) {
       }
     }
 
-    setLoadingQty(true);
+    setLoadingAction(typeOfAction);
     dispatch(
       updateCartQuantity({
         userId: user?.id,
@@ -71,7 +71,7 @@ function UserCartItemsContent({ cartItem }) {
           title: "Cart item is updated successfully",
         });
       }
-    }).finally(() => setLoadingQty(false));
+    }).finally(() => setLoadingAction(null));
   }
 
   function handleCartItemDelete(getCartItem) {
@@ -130,10 +130,12 @@ function UserCartItemsContent({ cartItem }) {
             variant="outline"
             className="size-8 sm:size-9 rounded-full"
             size="icon"
-            disabled={cartItem?.quantity === 1 || loadingQty}
+            disabled={cartItem?.quantity === 1 || !!loadingAction}
             onClick={() => handleUpdateQuantity(cartItem, "minus")}
+            loading={loadingAction === "minus"}
+            loadingText=""
           >
-            {loadingQty ? <span className="size-4" /> : <Minus className="size-4" />}
+            <Minus className="size-4" />
             <span className="sr-only">Decrease</span>
           </Button>
           <span className="font-semibold min-w-[1.5rem] text-center">{cartItem?.quantity}</span>
@@ -142,9 +144,11 @@ function UserCartItemsContent({ cartItem }) {
             className="size-8 sm:size-9 rounded-full"
             size="icon"
             onClick={() => handleUpdateQuantity(cartItem, "plus")}
-            disabled={loadingQty}
+            disabled={!!loadingAction}
+            loading={loadingAction === "plus"}
+            loadingText=""
           >
-            {loadingQty ? <span className="size-4" /> : <Plus className="size-4" />}
+            <Plus className="size-4" />
             <span className="sr-only">Increase</span>
           </Button>
         </div>

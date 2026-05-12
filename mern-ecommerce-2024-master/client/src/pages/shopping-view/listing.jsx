@@ -1,5 +1,6 @@
 import ProductDetailsDialog from "@/components/shopping-view/product-details";
 import ShoppingProductTile from "@/components/shopping-view/product-tile";
+import ProductTileSkeleton from "@/components/shopping-view/product-tile-skeleton";
 import FilterSidebar from "@/components/shopping-view/filter-sidebar";
 import FilterChips from "@/components/shopping-view/filter-chips";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ import gsap from "gsap";
 function ShoppingListing() {
   const dispatch = useDispatch();
 
-  const { productList, productDetails } = useSelector(
+  const { productList, productDetails, isLoading } = useSelector(
     (state) => state.shopProducts
   );
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -295,22 +296,28 @@ function ShoppingListing() {
 
           {/* GRID */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
-            {productList?.map((productItem, i) => (
-              <div
-                key={productItem._id}
-                ref={(el) => (productRefs.current[i] = el)}
-                onMouseEnter={() => handleHover(i, true)}
-                onMouseLeave={() => handleHover(i, false)}
-                className="transition-transform"
-              >
-                <ShoppingProductTile
-                  handleGetProductDetails={handleGetProductDetails}
-                  product={productItem}
-                  handleAddtoCart={handleAddtoCart}
-                  handleBuyNow={handleBuyNow}
-                />
-              </div>
-            ))}
+            {isLoading
+              ? Array.from({ length: 8 }).map((_, i) => (
+                  <div key={`skeleton-${i}`}>
+                    <ProductTileSkeleton />
+                  </div>
+                ))
+              : productList?.map((productItem, i) => (
+                  <div
+                    key={productItem._id}
+                    ref={(el) => (productRefs.current[i] = el)}
+                    onMouseEnter={() => handleHover(i, true)}
+                    onMouseLeave={() => handleHover(i, false)}
+                    className="transition-transform"
+                  >
+                    <ShoppingProductTile
+                      handleGetProductDetails={handleGetProductDetails}
+                      product={productItem}
+                      handleAddtoCart={handleAddtoCart}
+                      handleBuyNow={handleBuyNow}
+                    />
+                  </div>
+                ))}
           </div>
         </div>
       </div>
