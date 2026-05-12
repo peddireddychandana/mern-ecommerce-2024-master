@@ -137,7 +137,7 @@ function FilterSidebar({
   return (
     <>
       <aside className="hidden md:block w-[240px] shrink-0">
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto bg-white rounded-xl border border-gray-100 shadow-sm">
           {sidebarContent}
         </div>
       </aside>
