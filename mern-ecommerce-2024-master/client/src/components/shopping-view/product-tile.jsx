@@ -144,9 +144,9 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
           )}
         </div>
 
-        {/* Size & Color */}
+        {/* Size & Color - visible on hover */}
         {!isOutOfStock && (
-          <div className="space-y-2 mb-3">
+          <div className="space-y-2 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-[10px] text-gray-400 font-medium mr-1">Size:</span>
               {SIZE_OPTIONS.map((s) => (
