@@ -54,29 +54,9 @@ const addToCart = async (req, res) => {
     }
 
     await cart.save();
-
-    await cart.populate({
-      path: "items.productId",
-      select: "image title price salePrice",
-    });
-
-    const populateCartItems = cart.items.map((item) => ({
-      productId: item.productId ? item.productId._id : null,
-      image: item.productId ? item.productId.image : null,
-      title: item.productId ? item.productId.title : "Product not found",
-      price: item.productId ? item.productId.price : null,
-      salePrice: item.productId ? item.productId.salePrice : null,
-      quantity: item.quantity,
-      selectedSize: item.selectedSize || "",
-      selectedColor: item.selectedColor || "",
-    }));
-
     res.status(200).json({
       success: true,
-      data: {
-        ...cart._doc,
-        items: populateCartItems,
-      },
+      data: cart,
     });
   } catch (error) {
     console.log(error);
@@ -129,14 +109,6 @@ const fetchCartItems = async (req, res) => {
       selectedSize: item.selectedSize || "",
       selectedColor: item.selectedColor || "",
     }));
-
-    res.status(200).json({
-      success: true,
-      data: {
-        ...cart._doc,
-        items: populateCartItems,
-      },
-    });
   } catch (error) {
     console.log(error);
     res.status(500).json({

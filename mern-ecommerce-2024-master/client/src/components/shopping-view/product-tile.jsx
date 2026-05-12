@@ -10,10 +10,21 @@ function getDiscountPercent(price, salePrice) {
   return Math.round(((price - salePrice) / price) * 100);
 }
 
+const SIZE_OPTIONS = ["S", "M", "L", "XL"];
+const COLOR_OPTIONS = [
+  { name: "Red", hex: "#DC2626" },
+  { name: "Blue", hex: "#2563EB" },
+  { name: "Black", hex: "#1F2937" },
+  { name: "White", hex: "#F9FAFB", border: true },
+  { name: "Green", hex: "#16A34A" },
+];
+
 function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart, handleBuyNow }) {
   const [cartLoading, setCartLoading] = useState(false);
   const [buyLoading, setBuyLoading] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
   const discount = getDiscountPercent(product?.price, product?.salePrice);
   const isOutOfStock = product?.totalStock === 0;
   const isLowStock = !isOutOfStock && product?.totalStock < 10;
@@ -29,7 +40,7 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
     e.stopPropagation();
     if (cartLoading || isOutOfStock) return;
     setCartLoading(true);
-    const r = handleAddtoCart(product?._id, product?.totalStock, "", "");
+    const r = handleAddtoCart(product?._id, product?.totalStock, selectedSize, selectedColor);
     if (r && typeof r.finally === "function") r.finally(() => setCartLoading(false));
     else setTimeout(() => setCartLoading(false), 2000);
   }
@@ -38,7 +49,7 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
     e.stopPropagation();
     if (buyLoading || isOutOfStock) return;
     setBuyLoading(true);
-    const r = handleBuyNow(product?._id, product?.totalStock, "", "");
+    const r = handleBuyNow(product?._id, product?.totalStock, selectedSize, selectedColor);
     if (r && typeof r.finally === "function") r.finally(() => setBuyLoading(false));
     else setTimeout(() => setBuyLoading(false), 2000);
   }
@@ -133,7 +144,43 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
           )}
         </div>
 
-
+        {/* Size & Color - visible on hover */}
+        {!isOutOfStock && (
+          <div className="space-y-2 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[10px] text-gray-400 font-medium mr-1">Size:</span>
+              {SIZE_OPTIONS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setSelectedSize(selectedSize === s ? "" : s); }}
+                  className={`text-[10px] font-medium px-2 py-0.5 rounded border transition-colors ${
+                    selectedSize === s
+                      ? "bg-[#6B1E2E] text-white border-[#6B1E2E]"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-[#6B1E2E]"
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[10px] text-gray-400 font-medium mr-1">Color:</span>
+              {COLOR_OPTIONS.map((c) => (
+                <button
+                  key={c.name}
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setSelectedColor(selectedColor === c.name ? "" : c.name); }}
+                  className={`w-4 h-4 rounded-full border-2 transition-all ${
+                    selectedColor === c.name ? "border-[#6B1E2E] scale-125" : c.border ? "border-gray-300" : "border-transparent"
+                  }`}
+                  style={{ backgroundColor: c.hex }}
+                  title={c.name}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex gap-2">
