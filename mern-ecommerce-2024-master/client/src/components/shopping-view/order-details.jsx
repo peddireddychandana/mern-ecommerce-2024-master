@@ -58,8 +58,7 @@ function ShoppingOrderDetailsView({ orderDetails }) {
                 ? orderDetails?.cartItems.map((item) => (
                     <li className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 p-2 bg-muted/30 rounded-md">
                       <span className="text-sm">Title: {item.title}</span>
-                      <span className="text-sm">Size: {item.selectedSize || "-"}</span>
-                      <span className="text-sm">Color: {item.selectedColor || "-"}</span>
+                      
                       <span className="text-sm">Qty: {item.quantity}</span>
                       <span className="text-sm font-medium">Price: {formatPrice(item.price)}</span>
                     </li>
