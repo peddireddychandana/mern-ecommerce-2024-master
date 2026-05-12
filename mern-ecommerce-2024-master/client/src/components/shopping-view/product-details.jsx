@@ -48,19 +48,16 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
       ? productDetails?.price - productDetails?.salePrice
       : 0;
 
-  const imageViews = [
-    { url: productDetails?.image, label: "Front" },
-    {
-      url: productDetails?.image,
-      label: "Side",
-      filter: "brightness(0.95) contrast(1.05)",
-    },
-    {
-      url: productDetails?.image,
-      label: "Back",
-      filter: "brightness(0.9) saturate(0.9)",
-    },
-  ];
+  const images = productDetails?.images?.filter(Boolean)?.length
+    ? productDetails.images.filter(Boolean)
+    : productDetails?.image
+    ? [productDetails.image]
+    : [];
+
+  const imageViews = images.map((url, i) => ({
+    url,
+    label: i === 0 ? "Front" : `View ${i + 1}`,
+  }));
 
   function handleRatingChange(getRating) {
     setRating(getRating);

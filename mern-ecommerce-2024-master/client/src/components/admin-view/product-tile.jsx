@@ -17,19 +17,26 @@ function AdminProductTile({
   deletingId,
 }) {
   const discount = getDiscountPercent(product?.price, product?.salePrice);
+  const mainImage = product?.images?.[0] || product?.image || "";
+  const imageCount = product?.images?.length || (product?.image ? 1 : 0);
 
   return (
     <Card className="w-full max-w-sm mx-auto">
       <div>
         <div className="relative">
           <img
-            src={product?.image}
+            src={mainImage}
             alt={product?.title}
             className="w-full h-[200px] sm:h-[300px] object-cover rounded-t-lg"
           />
           {product?.salePrice > 0 && discount > 0 && (
             <Badge className="absolute top-2 left-2 bg-green-500 hover:bg-green-600">
               {discount}% OFF
+            </Badge>
+          )}
+          {imageCount > 1 && (
+            <Badge className="absolute top-2 right-2 bg-black/60 hover:bg-black/70 text-white border-0">
+              +{imageCount - 1} more
             </Badge>
           )}
         </div>

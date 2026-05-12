@@ -161,8 +161,7 @@ function AdminOrderDetailsView({ orderDetails }) {
                   ? orderDetails?.cartItems.map((item, idx) => (
                         <li key={idx} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 py-2 border-b border-gray-100 last:border-0 text-sm">
                           <span>Title: {item.title}</span>
-                          {item.selectedSize && <span>Size: {item.selectedSize}</span>}
-                          {item.selectedColor && <span>Color: {item.selectedColor}</span>}
+                          
                           <span>Quantity: {item.quantity}</span>
                           <span>Price: {formatPrice(item.price)}</span>
                         </li>

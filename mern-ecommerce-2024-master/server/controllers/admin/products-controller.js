@@ -25,6 +25,7 @@ const addProduct = async (req, res) => {
   try {
     const {
       image,
+      images,
       title,
       description,
       category,
@@ -34,10 +35,9 @@ const addProduct = async (req, res) => {
       averageReview,
     } = req.body;
 
-    console.log(averageReview, "averageReview");
-
     const newlyCreatedProduct = new Product({
-      image,
+      image: images?.[0] || image || "",
+      images: images || [],
       title,
       description,
       category,
@@ -85,6 +85,7 @@ const editProduct = async (req, res) => {
     const { id } = req.params;
     const {
       image,
+      images,
       title,
       description,
       category,
@@ -108,7 +109,8 @@ const editProduct = async (req, res) => {
     findProduct.salePrice =
       salePrice === "" ? 0 : salePrice || findProduct.salePrice;
     findProduct.totalStock = totalStock || findProduct.totalStock;
-    findProduct.image = image || findProduct.image;
+    findProduct.image = images?.[0] || image || findProduct.image;
+    findProduct.images = images || findProduct.images;
     findProduct.averageReview = averageReview || findProduct.averageReview;
 
     await findProduct.save();

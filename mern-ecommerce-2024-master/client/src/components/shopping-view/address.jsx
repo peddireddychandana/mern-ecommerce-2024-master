@@ -363,19 +363,7 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
             </div>
 
             {/* Notes */}
-            <div>
-              <Label htmlFor="notes" className="text-sm font-medium text-gray-700">Landmark / Notes</Label>
-              <div className="relative mt-1">
-                <StickyNote className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                <Input
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => updateField("notes", e.target.value)}
-                  placeholder="Nearby landmark, instructions (optional)"
-                  className="pl-9"
-                />
-              </div>
-            </div>
+           
 
             {/* Submit */}
             <div className="flex gap-3 pt-2">

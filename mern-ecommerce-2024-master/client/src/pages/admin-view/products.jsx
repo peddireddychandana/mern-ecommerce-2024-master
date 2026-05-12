@@ -16,7 +16,7 @@ import {
   editProduct,
   fetchAllProducts,
 } from "@/store/admin/products-slice";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 const initialFormData = {
@@ -31,11 +31,10 @@ const initialFormData = {
 };
 
 function AdminProducts() {
-  const [openCreateProductsDialog, setOpenCreateProductsDialog] =
-    useState(false);
+  const [openCreateProductsDialog, setOpenCreateProductsDialog] = useState(false);
   const [formData, setFormData] = useState(initialFormData);
-  const [imageFile, setImageFile] = useState(null);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState("");
+  const [imageFiles, setImageFiles] = useState([]);
+  const [uploadedImageUrls, setUploadedImageUrls] = useState([]);
   const [imageLoadingState, setImageLoadingState] = useState(false);
   const [currentEditedId, setCurrentEditedId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -45,32 +44,34 @@ function AdminProducts() {
   const dispatch = useDispatch();
   const { toast } = useToast();
 
+  const resetState = useCallback(() => {
+    setFormData(initialFormData);
+    setImageFiles([]);
+    setUploadedImageUrls([]);
+    setCurrentEditedId(null);
+    setOpenCreateProductsDialog(false);
+  }, []);
+
   function onSubmit(event) {
     event.preventDefault();
     if (loading) return;
     setLoading(true);
 
+    const images = uploadedImageUrls.filter(Boolean);
+    const payload = {
+      ...formData,
+      image: images[0] || formData.image || "",
+      images,
+    };
+
     const action = currentEditedId !== null
-      ? dispatch(
-          editProduct({
-            id: currentEditedId,
-            formData,
-          })
-        )
-      : dispatch(
-          addNewProduct({
-            ...formData,
-            image: uploadedImageUrl,
-          })
-        );
+      ? dispatch(editProduct({ id: currentEditedId, formData: payload }))
+      : dispatch(addNewProduct(payload));
 
     action.then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchAllProducts());
-        setFormData(initialFormData);
-        setOpenCreateProductsDialog(false);
-        setCurrentEditedId(null);
-        setImageFile(null);
+        resetState();
         toast({
           title: data?.payload?.message || (currentEditedId !== null ? "Product updated successfully" : "Product added successfully"),
         });
@@ -99,7 +100,24 @@ function AdminProducts() {
     dispatch(fetchAllProducts());
   }, [dispatch]);
 
-  console.log(formData, "productList");
+  useEffect(() => {
+    if (currentEditedId && openCreateProductsDialog) {
+      const product = productList.find((p) => p._id === currentEditedId);
+      if (product) {
+        const existing = product.images?.filter(Boolean)?.length
+          ? product.images.filter(Boolean)
+          : product.image
+          ? [product.image]
+          : [];
+        setUploadedImageUrls(existing);
+        setImageFiles(existing.map(() => null));
+      }
+    }
+  }, [currentEditedId, openCreateProductsDialog, productList]);
+
+  function handleSheetOpenChange(open) {
+    if (!open) resetState();
+  }
 
   return (
     <Fragment>
@@ -112,6 +130,7 @@ function AdminProducts() {
         {productList && productList.length > 0
           ? productList.map((productItem) => (
               <AdminProductTile
+                key={productItem._id}
                 setFormData={setFormData}
                 setOpenCreateProductsDialog={setOpenCreateProductsDialog}
                 setCurrentEditedId={setCurrentEditedId}
@@ -122,14 +141,7 @@ function AdminProducts() {
             ))
           : null}
       </div>
-      <Sheet
-        open={openCreateProductsDialog}
-        onOpenChange={() => {
-          setOpenCreateProductsDialog(false);
-          setCurrentEditedId(null);
-          setFormData(initialFormData);
-        }}
-      >
+      <Sheet open={openCreateProductsDialog} onOpenChange={handleSheetOpenChange}>
         <SheetContent side="right" className="overflow-auto w-full sm:max-w-md">
           <SheetHeader>
             <SheetTitle>
@@ -137,10 +149,10 @@ function AdminProducts() {
             </SheetTitle>
           </SheetHeader>
           <ProductImageUpload
-            imageFile={imageFile}
-            setImageFile={setImageFile}
-            uploadedImageUrl={uploadedImageUrl}
-            setUploadedImageUrl={setUploadedImageUrl}
+            imageFiles={imageFiles}
+            setImageFiles={setImageFiles}
+            uploadedImageUrls={uploadedImageUrls}
+            setUploadedImageUrls={setUploadedImageUrls}
             setImageLoadingState={setImageLoadingState}
             imageLoadingState={imageLoadingState}
             isEditMode={currentEditedId !== null}
