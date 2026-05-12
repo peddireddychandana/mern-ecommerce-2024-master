@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchCartItems } from "@/store/shop/cart-slice";
 import { createNewOrder, uploadPaymentScreenshot, confirmUPIPayment } from "@/store/shop/order-slice";
 import { useToast } from "@/components/ui/use-toast";
 import { QRCodeSVG } from "qrcode.react";
@@ -36,6 +37,10 @@ function ShoppingCheckout() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    dispatch(fetchCartItems(user?.id));
+  }, [dispatch]);
 
   const UPI_ID = "125006216930@cnrb";
   const BUSINESS_NAME = "SRI RAMAKRISHNA TEXTILES";
