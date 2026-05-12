@@ -5,7 +5,6 @@ import FilterSection from "./filter-section";
 import CheckboxFilter from "./checkbox-filter";
 import { cn } from "@/lib/utils";
 import { filterOptions } from "@/config";
-import toast from "react-hot-toast";
 
 function FilterSidebar({
   filters,
@@ -110,7 +109,6 @@ function FilterSidebar({
           onClick={() => {
             onApply?.();
             setIsMobileOpen(false);
-            if (totalActiveFilters > 0) toast.success(`${totalActiveFilters} filter${totalActiveFilters > 1 ? "s" : ""} applied`);
           }}
           className="w-full bg-[#6B1E2E] hover:bg-[#5a1a27] text-white rounded-lg h-10 text-sm font-medium"
         >
