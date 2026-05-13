@@ -1,4 +1,5 @@
 import ProductImageUpload from "@/components/admin-view/image-upload";
+import AdminSizesColorsPicker from "@/components/admin-view/sizes-colors-picker";
 import AdminProductTile from "@/components/admin-view/product-tile";
 import CommonForm from "@/components/common/form";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,12 @@ const initialFormData = {
   salePrice: "",
   totalStock: "",
   averageReview: 0,
+  sizes: [],
+  colors: [],
+  fabric: "",
+  length: "",
+  typeOfPiece: "",
+  occasion: "",
 };
 
 function AdminProducts() {
@@ -62,6 +69,8 @@ function AdminProducts() {
       ...formData,
       image: images[0] || formData.image || "",
       images,
+      sizes: formData.sizes || [],
+      colors: formData.colors || [],
     };
 
     const action = currentEditedId !== null
@@ -91,7 +100,7 @@ function AdminProducts() {
 
   function isFormValid() {
     return Object.keys(formData)
-      .filter((currentKey) => !["averageReview", "salePrice"].includes(currentKey))
+      .filter((currentKey) => !["averageReview", "salePrice", "fabric", "length", "typeOfPiece", "occasion"].includes(currentKey))
       .map((key) => formData[key] !== "")
       .every((item) => item);
   }
@@ -156,6 +165,12 @@ function AdminProducts() {
             setImageLoadingState={setImageLoadingState}
             imageLoadingState={imageLoadingState}
             isEditMode={currentEditedId !== null}
+          />
+          <AdminSizesColorsPicker
+            sizes={formData.sizes || []}
+            setSizes={(sizes) => setFormData((prev) => ({ ...prev, sizes }))}
+            colors={formData.colors || []}
+            setColors={(colors) => setFormData((prev) => ({ ...prev, colors }))}
           />
           <div className="py-6">
             <CommonForm

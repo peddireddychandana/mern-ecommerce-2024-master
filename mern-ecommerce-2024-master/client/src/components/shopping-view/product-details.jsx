@@ -1,17 +1,11 @@
-import { StarIcon, ChevronLeft, ChevronRight } from "lucide-react";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent } from "../ui/dialog";
-import { Separator } from "../ui/separator";
-import { Textarea } from "../ui/textarea";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { useToast } from "../ui/use-toast";
 import { setProductDetails } from "@/store/shop/products-slice";
-import { Label } from "../ui/label";
-import StarRatingComponent from "../common/star-rating";
-import { useEffect, useState } from "react";
-import { addReview, getReviews } from "@/store/shop/review-slice";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "../ui/badge";
 import { formatPrice } from "@/lib/format-price";
@@ -22,18 +16,16 @@ function getDiscountPercent(price, salePrice) {
 }
 
 function ProductDetailsDialog({ open, setOpen, productDetails }) {
-  const [reviewMsg, setReviewMsg] = useState("");
-  const [rating, setRating] = useState(0);
   const [cartLoading, setCartLoading] = useState(false);
   const [buyLoading, setBuyLoading] = useState(false);
-  const [reviewLoading, setReviewLoading] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
 
   const dispatch = useDispatch();
 
   const { user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
-  const { reviews } = useSelector((state) => state.shopReview);
 
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -59,18 +51,36 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
     label: i === 0 ? "Front" : `View ${i + 1}`,
   }));
 
-  function handleRatingChange(getRating) {
-    setRating(getRating);
+  const hasSizes = productDetails?.sizes?.length > 0;
+  const hasColors = productDetails?.colors?.length > 0;
+  const highlights = [
+    productDetails?.fabric && { label: "Fabric", value: productDetails.fabric },
+    productDetails?.length && { label: "Length", value: productDetails.length },
+    productDetails?.typeOfPiece && { label: "Type", value: productDetails.typeOfPiece },
+    productDetails?.occasion && { label: "Occasion", value: productDetails.occasion },
+  ].filter(Boolean);
+
+  function validateSelection() {
+    if (hasSizes && !selectedSize) {
+      toast({ title: "Please select a size", variant: "destructive" });
+      return false;
+    }
+    if (hasColors && !selectedColor) {
+      toast({ title: "Please select a color", variant: "destructive" });
+      return false;
+    }
+    return true;
   }
 
   function handleAddToCart(getCurrentProductId, getTotalStock) {
     if (cartLoading) return;
+    if (!validateSelection()) return;
 
     let getCartItems = cartItems.items || [];
 
     if (getCartItems.length) {
       const indexOfCurrentItem = getCartItems.findIndex(
-        (item) => item.productId === getCurrentProductId
+        (item) => item.productId === getCurrentProductId && item.selectedSize === selectedSize && item.selectedColor === selectedColor
       );
 
       if (indexOfCurrentItem > -1) {
@@ -95,6 +105,8 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         userId: user?.id,
         productId: getCurrentProductId,
         quantity: 1,
+        selectedSize,
+        selectedColor,
       })
     )
       .then((data) => {
@@ -111,12 +123,13 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
 
   function handleBuyNow(getCurrentProductId, getTotalStock) {
     if (buyLoading) return;
+    if (!validateSelection()) return;
 
     let getCartItems = cartItems.items || [];
 
     if (getCartItems.length) {
       const indexOfCurrentItem = getCartItems.findIndex(
-        (item) => item.productId === getCurrentProductId
+        (item) => item.productId === getCurrentProductId && item.selectedSize === selectedSize && item.selectedColor === selectedColor
       );
 
       if (indexOfCurrentItem > -1) {
@@ -141,6 +154,8 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         userId: user?.id,
         productId: getCurrentProductId,
         quantity: 1,
+        selectedSize,
+        selectedColor,
       })
     )
       .then((data) => {
@@ -160,53 +175,10 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
 
     dispatch(setProductDetails());
 
-    setRating(0);
-    setReviewMsg("");
     setActiveImg(0);
+    setSelectedSize("");
+    setSelectedColor("");
   }
-
-  function handleAddReview() {
-    if (reviewLoading) return;
-
-    setReviewLoading(true);
-
-    dispatch(
-      addReview({
-        productId: productDetails?._id,
-        userId: user?.id,
-        userName: user?.userName,
-        reviewMessage: reviewMsg,
-        reviewValue: rating,
-      })
-    )
-      .then((data) => {
-        if (data.payload.success) {
-          setRating(0);
-          setReviewMsg("");
-
-          dispatch(getReviews(productDetails?._id));
-
-          toast({
-            title: "Review added successfully!",
-          });
-        }
-      })
-      .finally(() => setReviewLoading(false));
-  }
-
-  useEffect(() => {
-    if (productDetails !== null)
-      dispatch(getReviews(productDetails?._id));
-  }, [productDetails]);
-
-  const averageReview =
-    reviews && reviews.length > 0
-      ? reviews.reduce(
-          (sum, reviewItem) =>
-            sum + reviewItem.reviewValue,
-          0
-        ) / reviews.length
-      : 0;
 
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
@@ -325,25 +297,81 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
             </p>
           )}
 
-          <div className="flex items-center gap-2 mt-2">
-            <div className="flex items-center gap-0.5">
-              <StarRatingComponent rating={averageReview} />
+          {/* Highlights */}
+          {highlights.length > 0 && (
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-100">
+              <h3 className="text-sm font-bold text-gray-700 mb-2">Product Highlights</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {highlights.map((h) => (
+                  <div key={h.label} className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-medium text-gray-400 uppercase min-w-[52px]">{h.label}:</span>
+                    <span className="text-xs font-semibold text-gray-700">{h.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
+          )}
 
-            <span className="text-muted-foreground text-sm">
-              ({averageReview.toFixed(2)})
-            </span>
+          {/* Sizes */}
+          {hasSizes && (
+            <div className="mt-4">
+              <p className="text-sm font-semibold text-gray-700 mb-2">
+                Size {selectedSize && <span className="text-[#6B1E2E]">: {selectedSize}</span>}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {productDetails.sizes.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setSelectedSize(selectedSize === s ? "" : s)}
+                    className={`min-w-[40px] h-9 rounded-lg text-sm font-medium border transition-all ${
+                      selectedSize === s
+                        ? "bg-[#6B1E2E] text-white border-[#6B1E2E] shadow-sm"
+                        : "bg-white text-gray-600 border-gray-200 hover:border-[#6B1E2E] hover:text-[#6B1E2E]"
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
-            {reviews?.length > 0 && (
-              <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                Verified
-              </span>
-            )}
-          </div>
+          {/* Colors */}
+          {hasColors && (
+            <div className="mt-4">
+              <p className="text-sm font-semibold text-gray-700 mb-2">
+                Color {selectedColor && <span className="text-[#6B1E2E]">: {selectedColor}</span>}
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {productDetails.colors.map((c, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setSelectedColor(selectedColor === c.name ? "" : c.name)}
+                    className="flex flex-col items-center gap-1 group"
+                  >
+                    <span
+                      className={`w-8 h-8 rounded-full border-2 transition-all ${
+                        selectedColor === c.name
+                          ? "border-[#6B1E2E] ring-1 ring-[#6B1E2E]/30 scale-110"
+                          : "border-gray-200 group-hover:border-gray-400"
+                      }`}
+                      style={{ backgroundColor: c.value }}
+                    />
+                    <span className={`text-[10px] font-medium ${
+                      selectedColor === c.name ? "text-[#6B1E2E]" : "text-gray-400"
+                    }`}>
+                      {c.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Actions */}
-          <div className="mt-4 sm:mt-5 mb-4 sm:mb-5">
+          <div className="mt-5 mb-4 sm:mb-5">
             {productDetails?.totalStock === 0 ? (
               <Button className="w-full opacity-60 cursor-not-allowed">
                 Out of Stock
@@ -382,94 +410,6 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
             )}
           </div>
 
-          <Separator />
-
-          {/* Reviews */}
-          <div className="max-h-[300px] overflow-auto mt-4">
-            <h2 className="text-lg font-bold mb-4">
-              Reviews
-            </h2>
-
-            <div className="grid gap-6">
-              {reviews && reviews.length > 0 ? (
-                reviews.map((reviewItem) => (
-                  <div
-                    className="flex gap-4"
-                    key={reviewItem._id}
-                  >
-                    <Avatar className="w-10 h-10 border">
-                      <AvatarFallback>
-                        {reviewItem?.userName[0].toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-
-                    <div className="grid gap-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-bold">
-                          {reviewItem?.userName}
-                        </h3>
-
-                        <span className="text-[10px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full">
-                          Verified Purchase
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-0.5">
-                        <StarRatingComponent
-                          rating={
-                            reviewItem?.reviewValue
-                          }
-                        />
-                      </div>
-
-                      <p className="text-muted-foreground">
-                        {reviewItem.reviewMessage}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <h1 className="text-sm text-gray-400">
-                  No Reviews
-                </h1>
-              )}
-            </div>
-
-            {/* Write Review */}
-            <div className="mt-6 flex-col flex gap-2 border rounded-lg p-4 bg-gray-50">
-              <Label className="font-semibold">
-                Write a review
-              </Label>
-
-              <div className="flex gap-1">
-                <StarRatingComponent
-                  rating={rating}
-                  handleRatingChange={
-                    handleRatingChange
-                  }
-                />
-              </div>
-
-              <Textarea
-                name="reviewMsg"
-                value={reviewMsg}
-                onChange={(event) =>
-                  setReviewMsg(event.target.value)
-                }
-                placeholder="Write a review..."
-                className="min-h-[80px]"
-              />
-
-              <Button
-                onClick={handleAddReview}
-                disabled={reviewMsg.trim() === ""}
-                loading={reviewLoading}
-                loadingText="Submitting..."
-              >
-                Submit
-              </Button>
-            </div>
-          </div>
         </div>
       </DialogContent>
     </Dialog>

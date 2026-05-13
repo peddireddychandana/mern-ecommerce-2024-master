@@ -19,6 +19,10 @@ function AdminProductTile({
   const discount = getDiscountPercent(product?.price, product?.salePrice);
   const mainImage = product?.images?.[0] || product?.image || "";
   const imageCount = product?.images?.length || (product?.image ? 1 : 0);
+  const hasSizes = product?.sizes?.length > 0;
+  const hasColors = product?.colors?.length > 0;
+  const sizesToShow = product?.sizes?.slice(0, 4) || [];
+  const colorsToShow = product?.colors?.slice(0, 5) || [];
 
   return (
     <Card className="w-full max-w-sm mx-auto">
@@ -54,6 +58,26 @@ function AdminProductTile({
             ) : (
               <span className="text-lg font-semibold text-primary">{formatPrice(product?.price)}</span>
             )}
+          </div>
+          <div className="mt-3 pt-3 border-t border-gray-100 space-y-1.5">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              {product?.sizes?.length > 0 && (
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] font-medium text-gray-400 uppercase">Sizes:</span>
+                  <span className="text-[10px] font-semibold text-gray-700">{product.sizes.join(", ")}</span>
+                </div>
+              )}
+              {product?.colors?.length > 0 && (
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] font-medium text-gray-400 uppercase">Colors:</span>
+                  <div className="flex items-center gap-0.5">
+                    {product.colors.map((c, i) => (
+                      <span key={i} className="inline-block w-3.5 h-3.5 rounded-full border border-gray-200" style={{ backgroundColor: c.value }} title={c.name} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between items-center gap-2">

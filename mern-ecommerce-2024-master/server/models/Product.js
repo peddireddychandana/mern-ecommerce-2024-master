@@ -11,6 +11,12 @@ const ProductSchema = new mongoose.Schema(
     salePrice: Number,
     totalStock: Number,
     averageReview: Number,
+    sizes: [String],
+    colors: [{ name: String, value: String }],
+    fabric: String,
+    length: String,
+    typeOfPiece: String,
+    occasion: String,
   },
   { timestamps: true }
 );

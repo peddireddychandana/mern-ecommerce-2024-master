@@ -4,6 +4,7 @@ import { Badge } from "../ui/badge";
 import { categoryOptionsMap } from "@/config";
 import { useRef, useState } from "react";
 import { formatPrice } from "@/lib/format-price";
+import { useToast } from "../ui/use-toast";
 
 function getDiscountPercent(price, salePrice) {
   if (!salePrice || salePrice <= 0 || !price || price <= 0) return 0;
@@ -14,24 +15,29 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
   const [cartLoading, setCartLoading] = useState(false);
   const [buyLoading, setBuyLoading] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [selectedColor, setSelectedColor] = useState("");
   const addingRef = useRef(false);
+  const { toast } = useToast();
   const discount = getDiscountPercent(product?.price, product?.salePrice);
   const isOutOfStock = product?.totalStock === 0;
   const isLowStock = !isOutOfStock && product?.totalStock < 10;
   const hasSale = product?.salePrice > 0;
-
-  const stockBadge = product?.totalStock > 50 ? (
-    <Badge className="bg-emerald-500 hover:bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 shadow-sm">NEW</Badge>
-  ) : product?.totalStock > 20 ? (
-    <Badge className="bg-amber-500 hover:bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 shadow-sm">BESTSELLER</Badge>
-  ) : null;
+  const hasColors = product?.colors?.length > 0;
+  function validateSelection() {
+    if (hasColors && !selectedColor) {
+      toast({ title: "Please select a color", variant: "destructive" });
+      return false;
+    }
+    return true;
+  }
 
   function onAddToCart(e) {
     e.stopPropagation();
     if (addingRef.current || isOutOfStock) return;
+    if (!validateSelection()) return;
     addingRef.current = true;
     setCartLoading(true);
-    const r = handleAddtoCart(product?._id, product?.totalStock, "", "");
+    const r = handleAddtoCart(product?._id, product?.totalStock, selectedColor);
     if (r && typeof r.finally === "function") {
       r.finally(() => { addingRef.current = false; setCartLoading(false); });
     } else {
@@ -42,8 +48,9 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
   function onBuyNow(e) {
     e.stopPropagation();
     if (buyLoading || isOutOfStock) return;
+    if (!validateSelection()) return;
     setBuyLoading(true);
-    const r = handleBuyNow(product?._id, product?.totalStock, "", "");
+    const r = handleBuyNow(product?._id, product?.totalStock, selectedColor);
     if (r && typeof r.finally === "function") r.finally(() => setBuyLoading(false));
     else setTimeout(() => setBuyLoading(false), 2000);
   }
@@ -71,12 +78,10 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
           }`}
         />
 
-        {/* Badges */}
         <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
           {hasSale && discount > 0 && (
             <Badge className="bg-red-500 hover:bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 shadow-sm">{discount}% OFF</Badge>
           )}
-          {stockBadge}
           {isLowStock && (
             <Badge className="bg-amber-500 hover:bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 shadow-sm">
               Only {product?.totalStock} left
@@ -84,14 +89,12 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
           )}
         </div>
 
-        {/* Out of stock overlay */}
         {isOutOfStock && (
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
             <span className="text-white font-bold text-sm bg-black/60 px-4 py-1.5 rounded-full">Out of Stock</span>
           </div>
         )}
 
-        {/* Quick View on hover */}
         <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
           <button
             onClick={onQuickView}
@@ -115,7 +118,6 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
           {product?.title}
         </h3>
 
-        {/* Star rating */}
         <div className="flex items-center gap-1 mb-2">
           <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
           <span className="text-xs font-semibold text-gray-700">
@@ -123,7 +125,6 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
           </span>
         </div>
 
-        {/* Price */}
         <div className="flex items-baseline gap-2 flex-wrap mb-3">
           <span className="text-sm sm:text-base font-bold text-[#6B1E2E]">
             {formatPrice(product?.salePrice > 0 ? product?.salePrice : product?.price)}
@@ -137,6 +138,31 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
             </>
           )}
         </div>
+
+        {/* Colors */}
+        {hasColors && (
+          <div className="mb-3">
+            <p className="text-[10px] font-medium text-gray-400 uppercase mb-1.5">
+              Color {selectedColor && <span className="text-gray-600 normal-case">: {selectedColor}</span>}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {product.colors.map((c, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setSelectedColor(selectedColor === c.name ? "" : c.name); }}
+                  className={`w-7 h-7 rounded-full border-2 transition-all ${
+                    selectedColor === c.name
+                      ? "border-[#6B1E2E] ring-1 ring-[#6B1E2E]/30 scale-110"
+                      : "border-gray-200 hover:border-gray-400"
+                  }`}
+                  style={{ backgroundColor: c.value }}
+                  title={c.name}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex gap-2">

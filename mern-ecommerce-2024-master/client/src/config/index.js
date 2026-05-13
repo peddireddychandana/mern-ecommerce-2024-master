@@ -98,6 +98,34 @@ export const addProductFormElements = [
     type: "number",
     placeholder: "Enter total stock",
   },
+  {
+    label: "Fabric",
+    name: "fabric",
+    componentType: "input",
+    type: "text",
+    placeholder: "e.g. Cotton, Silk, Polyester",
+  },
+  {
+    label: "Length",
+    name: "length",
+    componentType: "input",
+    type: "text",
+    placeholder: "e.g. Full Length, Knee Length",
+  },
+  {
+    label: "Type of Piece",
+    name: "typeOfPiece",
+    componentType: "input",
+    type: "text",
+    placeholder: "e.g. Stitched, Unstitched",
+  },
+  {
+    label: "Occasion",
+    name: "occasion",
+    componentType: "input",
+    type: "text",
+    placeholder: "e.g. Casual, Party, Festive",
+  },
 ];
 
 export const shoppingViewHeaderMenuItems = [
