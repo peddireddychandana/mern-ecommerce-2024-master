@@ -1,3 +1,4 @@
+import { Eye, EyeOff } from "lucide-react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import {
@@ -9,6 +10,7 @@ import {
 } from "../ui/select";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
+import { useState } from "react";
 
 function CommonForm({
   formControls,
@@ -20,13 +22,47 @@ function CommonForm({
   isLoading = false,
   loadingText,
 }) {
+  const [showPassword, setShowPassword] = useState({});
+
+  function togglePasswordVisibility(name) {
+    setShowPassword((prev) => ({ ...prev, [name]: !prev[name] }));
+  }
+
   function renderInputsByComponentType(getControlItem) {
     let element = null;
     const value = formData[getControlItem.name] || "";
+    const isPassword = getControlItem.type === "password";
+    const isVisible = showPassword[getControlItem.name];
 
     switch (getControlItem.componentType) {
       case "input":
-        element = (
+        element = isPassword ? (
+          <div className="relative">
+            <Input
+              name={getControlItem.name}
+              placeholder={getControlItem.placeholder}
+              id={getControlItem.name}
+              type={isVisible ? "text" : "password"}
+              value={value}
+              onChange={(event) =>
+                setFormData({
+                  ...formData,
+                  [getControlItem.name]: event.target.value,
+                })
+              }
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => togglePasswordVisibility(getControlItem.name)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              tabIndex={-1}
+              aria-label={isVisible ? "Hide password" : "Show password"}
+            >
+              {isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+        ) : (
           <Input
             name={getControlItem.name}
             placeholder={getControlItem.placeholder}
