@@ -67,6 +67,10 @@
     @apply bg-background text-foreground;
   }
 }
+html {
+  scroll-behavior: smooth;
+}
+
 @keyframes slideDown {
   0% {
     transform: translateY(-25px);

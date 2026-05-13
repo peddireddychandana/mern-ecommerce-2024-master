@@ -80,8 +80,8 @@ function HeaderRightContent() {
   }
 
   useEffect(() => {
-    dispatch(fetchCartItems(user?.id));
-  }, [dispatch]);
+    if (user?.id) dispatch(fetchCartItems(user?.id));
+  }, [dispatch, user?.id]);
 
   return (
     <div className="flex items-center gap-4">

@@ -2,7 +2,7 @@ import { ShoppingCart, Eye, Star } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { categoryOptionsMap } from "@/config";
-import { useRef, useState } from "react";
+import { memo, useRef, useState } from "react";
 import { formatPrice } from "@/lib/format-price";
 import { useToast } from "../ui/use-toast";
 
@@ -195,4 +195,4 @@ function ShoppingProductTile({ product, handleGetProductDetails, handleAddtoCart
   );
 }
 
-export default ShoppingProductTile;
+export default memo(ShoppingProductTile);

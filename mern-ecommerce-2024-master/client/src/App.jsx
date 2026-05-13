@@ -1,35 +1,47 @@
+import { lazy, Suspense } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import AuthLayout from "./components/auth/layout";
-import AuthLogin from "./pages/auth/login";
-import AuthRegister from "./pages/auth/register";
 import AdminLayout from "./components/admin-view/layout";
-import AdminDashboard from "./pages/admin-view/dashboard";
-import AdminProducts from "./pages/admin-view/products";
-import AdminOrders from "./pages/admin-view/orders";
 import ShoppingLayout from "./components/shopping-view/layout";
-import NotFound from "./pages/not-found";
-import ShoppingHome from "./pages/shopping-view/home";
-import ShoppingListing from "./pages/shopping-view/listing";
-import ShoppingCheckout from "./pages/shopping-view/checkout";
-import ShoppingAccount from "./pages/shopping-view/account";
-import OrdersPage from "./pages/shopping-view/orders";
 import CheckAuth from "./components/common/check-auth";
-import UnauthPage from "./pages/unauth-page";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { checkAuth } from "./store/auth-slice";
-import { Skeleton } from "@/components/ui/skeleton";
-import UpiConfirmationPage from "./pages/shopping-view/paypal-return";
-import PaymentSuccessPage from "./pages/shopping-view/payment-success";
-import SearchProducts from "./pages/shopping-view/search";
+import { Loader2 } from "lucide-react";
+
+const AuthLogin = lazy(() => import("./pages/auth/login"));
+const AuthRegister = lazy(() => import("./pages/auth/register"));
+const AdminDashboard = lazy(() => import("./pages/admin-view/dashboard"));
+const AdminProducts = lazy(() => import("./pages/admin-view/products"));
+const AdminOrders = lazy(() => import("./pages/admin-view/orders"));
+const NotFound = lazy(() => import("./pages/not-found"));
+const ShoppingHome = lazy(() => import("./pages/shopping-view/home"));
+const ShoppingListing = lazy(() => import("./pages/shopping-view/listing"));
+const ShoppingCheckout = lazy(() => import("./pages/shopping-view/checkout"));
+const ShoppingAccount = lazy(() => import("./pages/shopping-view/account"));
+const OrdersPage = lazy(() => import("./pages/shopping-view/orders"));
+const UnauthPage = lazy(() => import("./pages/unauth-page"));
+const UpiConfirmationPage = lazy(() => import("./pages/shopping-view/paypal-return"));
+const PaymentSuccessPage = lazy(() => import("./pages/shopping-view/payment-success"));
+const SearchProducts = lazy(() => import("./pages/shopping-view/search"));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
-    window.history.scrollRestoration = "manual";
     window.scrollTo(0, 0);
   }, [pathname]);
   return null;
+}
+
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-white">
+      <div className="flex flex-col items-center gap-3">
+        <Loader2 className="w-8 h-8 text-[#6B1E2E] animate-spin" />
+        <span className="text-sm text-gray-500 font-medium">Loading...</span>
+      </div>
+    </div>
+  );
 }
 
 function App() {
@@ -42,11 +54,12 @@ function App() {
     dispatch(checkAuth());
   }, [dispatch]);
 
-  if (isLoading) return <Skeleton className="w-full max-w-[800px] bg-black h-[300px] sm:h-[600px]" />;
+  if (isLoading) return <PageLoader />;
 
   return (
     <div className="flex flex-col overflow-hidden bg-white">
       <ScrollToTop />
+      <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route
           path="/"
@@ -100,6 +113,7 @@ function App() {
         <Route path="/unauth-page" element={<UnauthPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </Suspense>
     </div>
   );
 }

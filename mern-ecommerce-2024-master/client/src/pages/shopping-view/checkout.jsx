@@ -41,22 +41,13 @@ function ShoppingCheckout() {
 
   useEffect(() => {
     if (user?.id) dispatch(fetchAllAddresses(user?.id));
-    const savedId = localStorage.getItem("selectedAddressId");
-    if (savedId) {
-      if (addressList?.length) {
-        const found = addressList.find(a => a._id === savedId);
-        if (found) setCurrentSelectedAddress(found);
-      }
-    }
-  }, []);
+  }, [dispatch, user?.id]);
 
   useEffect(() => {
-    if (addressList?.length) {
-      const savedId = localStorage.getItem("selectedAddressId");
-      if (savedId) {
-        const found = addressList.find(a => a._id === savedId);
-        if (found) setCurrentSelectedAddress(found);
-      }
+    const savedId = localStorage.getItem("selectedAddressId");
+    if (savedId && addressList?.length) {
+      const found = addressList.find(a => a._id === savedId);
+      if (found) setCurrentSelectedAddress(found);
     }
   }, [addressList]);
 
@@ -540,7 +531,7 @@ function ShoppingCheckout() {
               </Button>
 
               <p className="text-xs text-center text-blue-600">
-                Your payment will be verified within 5-10 minutes.
+                The payment will be verified within some time. Please wait for confirmation.
               </p>
             </div>
           )}

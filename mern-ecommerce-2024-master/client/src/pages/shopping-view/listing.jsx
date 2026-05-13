@@ -11,6 +11,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useToast } from "@/components/ui/use-toast";
 import { sortOptions } from "@/config";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
@@ -269,21 +270,41 @@ function ShoppingListing() {
   return (
     <div ref={containerRef} className="container mx-auto px-4 py-6">
       <div className="flex flex-col md:flex-row gap-6">
-        {/* FILTER SIDEBAR */}
-        {showFilters && (
-          <FilterSidebar
-            filters={filters}
-            onApply={(appliedFilters) => {
-              setFilters(appliedFilters);
-              sessionStorage.setItem("filters", JSON.stringify(appliedFilters));
-              setShowFilters(false);
-            }}
-            onClear={() => {
-              setFilters({});
-              sessionStorage.removeItem("filters");
-            }}
-          />
-        )}
+        {/* FILTER SIDEBAR - Desktop inline */}
+        <div className="hidden md:block">
+          {showFilters && (
+            <FilterSidebar
+              filters={filters}
+              onApply={(appliedFilters) => {
+                setFilters(appliedFilters);
+                sessionStorage.setItem("filters", JSON.stringify(appliedFilters));
+                setShowFilters(false);
+              }}
+              onClear={() => {
+                setFilters({});
+                sessionStorage.removeItem("filters");
+              }}
+            />
+          )}
+        </div>
+
+        {/* FILTER SIDEBAR - Mobile sheet */}
+        <Sheet open={showFilters} onOpenChange={setShowFilters}>
+          <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 md:hidden">
+            <FilterSidebar
+              filters={filters}
+              onApply={(appliedFilters) => {
+                setFilters(appliedFilters);
+                sessionStorage.setItem("filters", JSON.stringify(appliedFilters));
+                setShowFilters(false);
+              }}
+              onClear={() => {
+                setFilters({});
+                sessionStorage.removeItem("filters");
+              }}
+            />
+          </SheetContent>
+        </Sheet>
 
         {/* PRODUCTS */}
         <div className="flex-1 min-w-0 bg-white rounded-xl border border-gray-100 shadow-sm">

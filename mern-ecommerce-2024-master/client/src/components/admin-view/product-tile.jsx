@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardFooter } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -107,4 +108,4 @@ function AdminProductTile({
   );
 }
 
-export default AdminProductTile;
+export default memo(AdminProductTile);

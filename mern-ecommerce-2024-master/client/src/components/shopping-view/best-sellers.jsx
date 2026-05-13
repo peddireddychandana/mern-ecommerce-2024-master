@@ -2,6 +2,7 @@ import { Star, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
+import { memo } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { fetchBestSellingProducts } from "@/store/shop/products-slice"
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice"
@@ -34,8 +35,8 @@ function BestSellers() {
   const [cartLoading, setCartLoading] = useState(false)
 
   useEffect(() => {
-    dispatch(fetchBestSellingProducts())
-  }, [dispatch])
+    if (bestSellersList?.length === 0) dispatch(fetchBestSellingProducts())
+  }, [dispatch, bestSellersList?.length])
 
   function handleAddtoCart(productId) {
     if (cartLoading) return;
@@ -80,11 +81,12 @@ function BestSellers() {
               key={product._id}
               className="group bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
             >
-              <div className="relative overflow-hidden">
+              <div className="relative overflow-hidden bg-gray-50 aspect-[3/4]">
                 <img
                   src={product.image}
                   alt={product.title}
-                  className="w-full h-[200px] sm:h-[280px] object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <Badge className="absolute top-3 left-3 bg-[#6B1E2E] text-white text-xs font-semibold px-3 py-1">
                   Best Seller
@@ -133,4 +135,4 @@ function BestSellers() {
   )
 }
 
-export default BestSellers
+export default memo(BestSellers)
